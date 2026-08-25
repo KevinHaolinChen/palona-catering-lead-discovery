@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IHOP Catering Lead Discovery</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div>
+        <div class="eyebrow">PALONA TAKE-HOME · EVIDENCE-FIRST</div>
+        <h1>IHOP Redwood City Catering Leads</h1>
+        <p>Ranked prospects with public evidence, explicit inferences, contact paths, uncertainty, and grounded outreach drafts.</p>
+      </div>
+      <div class="hero-card">
+        <span>Target restaurant</span>
+        <strong>IHOP · 491 Veterans Blvd</strong>
+        <small>Redwood City, CA 94063</small>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <div>
+        <label for="minScore">Minimum score <strong id="scoreValue">0</strong></label>
+        <input id="minScore" type="range" min="0" max="100" value="0" />
+      </div>
+      <div class="legend">
+        <span class="badge fact">FACT</span>
+        <span class="badge inference">INFERENCE</span>
+        <span class="badge ai">AI / GENERATED</span>
+      </div>
+    </section>
+
+    <section id="summary" class="summary"></section>
+    <section id="prospects" class="grid" aria-live="polite"></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

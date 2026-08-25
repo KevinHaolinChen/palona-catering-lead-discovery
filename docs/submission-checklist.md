@@ -1,0 +1,21 @@
+# Submission Checklist — Java Version
+
+- [x] Java 21 / Spring Boot implementation
+- [x] 12 cached, reviewable prospects
+- [x] Claim-level fact / inference / generated distinction
+- [x] Public source URLs for factual claims
+- [x] Explainable 100-point ranking
+- [x] Public role/contact path without invented people
+- [x] Grounded cached outreach drafts
+- [x] Optional OpenAI Responses API regeneration
+- [x] Live OpenStreetMap / Overpass candidate discovery
+- [x] Bounded direct-public-page enrichment helper
+- [x] Cached demo result for external-source outages
+- [x] DPR stale/conflicting-data rejection example
+- [x] Business-invariant tests included
+- [x] Docker one-command setup
+- [ ] Run `mvn test` in a network-enabled environment before submission
+- [ ] Push to a new private GitHub repository
+- [ ] Deploy or record a demo
+- [ ] Final manual verification of source freshness
+- [ ] Rehearse the technical discussion

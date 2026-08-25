@@ -1,0 +1,650 @@
+[
+  {
+    "id": "chan-zuckerberg-community-space",
+    "organization": "Chan Zuckerberg Community Space",
+    "category": "community_event_space",
+    "address": "801 Jefferson Ave, Suite 100, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://chanzuckerberg.com/communityspace/",
+    "score": 94,
+    "score_breakdown": {"proximity": 24, "organization_scale": 18, "event_meeting_signal": 25, "food_need_signal": 19, "contactability": 8},
+    "fit_summary": "The strongest lead in the demo because the official site explicitly describes a Redwood City meeting and event space used by organizations, including daytime and evening events.",
+    "evidence": [
+      {
+        "id": "czi-f1",
+        "kind": "fact",
+        "text": "CZI says its Community Space at 801 Jefferson Avenue provides free meeting and event space for organizations to convene, collaborate, and host programs.",
+        "confidence": 0.99,
+        "source_title": "Chan Zuckerberg Community Space",
+        "source_url": "https://chanzuckerberg.com/communityspace/",
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "proximity"]
+      },
+      {
+        "id": "czi-f2",
+        "kind": "fact",
+        "text": "The published event guidelines list daytime and evening operating hours and provide communityspace@chanzuckerberg.com for questions.",
+        "confidence": 0.99,
+        "source_title": "Membership and Event Guidelines",
+        "source_url": "https://chanzuckerberg.com/membership-and-event-guidelines/",
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "contactability"]
+      },
+      {
+        "id": "czi-i1",
+        "kind": "inference",
+        "text": "A space built around scheduled meetings and events is likely to have recurring group-food occasions, but the site does not state that outside catering vendors are allowed.",
+        "confidence": 0.86,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Community Space / Events Operations",
+      "channel": "public email",
+      "value": "communityspace@chanzuckerberg.com",
+      "source_url": "https://chanzuckerberg.com/membership-and-event-guidelines/",
+      "confidence": 0.99,
+      "note": "Use the public space-operations path rather than inventing an individual contact."
+    },
+    "outreach_draft": "Hi Community Space team — I saw that the Redwood City Community Space hosts daytime and evening meetings and events for local organizations. IHOP Redwood City on Veterans Blvd offers catering that could be useful for breakfast meetings or casual group meals. If outside food vendors are permitted, would it be helpful if I sent a simple group-order menu and delivery options for upcoming events?",
+    "outreach_generated_by": "AI-assisted draft; restricted to cited facts plus the explicitly labeled outside-vendor uncertainty.",
+    "uncertainties": ["The public guidelines do not confirm whether outside catering is permitted for every event."]
+  },
+  {
+    "id": "goodwin-silicon-valley",
+    "organization": "Goodwin — Silicon Valley Office",
+    "category": "law_office",
+    "address": "601 Marshall Street, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://www.goodwinlaw.com/en/locations/silicon-valley",
+    "score": 90,
+    "score_breakdown": {"proximity": 23, "organization_scale": 17, "event_meeting_signal": 24, "food_need_signal": 18, "contactability": 8},
+    "fit_summary": "A nearby professional-services office with direct evidence that it hosts panels, receptions, bootcamps, and other in-office events.",
+    "evidence": [
+      {
+        "id": "goodwin-f1",
+        "kind": "fact",
+        "text": "Goodwin lists its Silicon Valley office at 601 Marshall Street in Redwood City with a public main phone number.",
+        "confidence": 0.99,
+        "source_title": "Goodwin Silicon Valley",
+        "source_url": "https://www.goodwinlaw.com/en/locations/silicon-valley",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "contactability", "organization_scale"]
+      },
+      {
+        "id": "goodwin-f2",
+        "kind": "fact",
+        "text": "Goodwin has published event pages for programs hosted at the Redwood City office, including a panel discussion and reception.",
+        "confidence": 0.98,
+        "source_title": "To Disclose or Not to Disclose — Goodwin Event",
+        "source_url": "https://www.goodwinlaw.com/en/news-and-events/events/2023/11/practices-cldr-to-disclose-or-not-to-disclose",
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      },
+      {
+        "id": "goodwin-i1",
+        "kind": "inference",
+        "text": "An office that hosts client-facing panels and receptions is a plausible recurring catering buyer, though frequency and vendor policy are unknown.",
+        "confidence": 0.9,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Office Administrator / Events or Workplace Operations",
+      "channel": "main office phone",
+      "value": "+1 650 752 3100",
+      "source_url": "https://www.goodwinlaw.com/en/locations/silicon-valley",
+      "confidence": 0.99,
+      "note": "Ask to be routed to the person handling office events, hospitality, or workplace services."
+    },
+    "outreach_draft": "Hi Goodwin Silicon Valley team — I noticed your Redwood City office hosts in-person programs and receptions. IHOP Redwood City is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send a concise catering menu and delivery options for future internal meetings or office events if that would be useful to your workplace or events team.",
+    "outreach_generated_by": "AI-assisted draft grounded in the official office and event pages.",
+    "uncertainties": ["Public sources do not identify Goodwin's catering vendor policy or event frequency."]
+  },
+  {
+    "id": "stanford-redwood-city",
+    "organization": "Stanford Redwood City",
+    "category": "university_campus",
+    "address": "2855 Bay Rd, Redwood City, CA 94063",
+    "proximity_band": "roughly 2-4 miles",
+    "website": "https://redwoodcity.stanford.edu/",
+    "score": 88,
+    "score_breakdown": {"proximity": 17, "organization_scale": 20, "event_meeting_signal": 24, "food_need_signal": 19, "contactability": 8},
+    "fit_summary": "Large administrative campus with direct evidence of meeting-room infrastructure and a historical staffing signal, but likely to have formal procurement or incumbent catering arrangements.",
+    "evidence": [
+      {
+        "id": "stanford-f1",
+        "kind": "fact",
+        "text": "Stanford's current Redwood City location page lists the campus at 2855 Bay Rd.",
+        "confidence": 0.99,
+        "source_title": "Stanford Redwood City — Location & Directions",
+        "source_url": "https://redwoodcity.stanford.edu/contact-us/location-directions",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity"]
+      },
+      {
+        "id": "stanford-f2",
+        "kind": "fact",
+        "text": "A 2017 Stanford planning article said about 2,700 employees were expected to work at Stanford Redwood City; this is historical scale evidence, not a current headcount claim.",
+        "confidence": 0.82,
+        "source_title": "Redwood City campus moves ahead — Stanford Report",
+        "source_url": "https://news.stanford.edu/stories/2017/12/redwood-city-campus-moves-ahead",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale"]
+      },
+      {
+        "id": "stanford-f3",
+        "kind": "fact",
+        "text": "Stanford University IT documented room-booking infrastructure for pre-planned meetings at the Redwood City campus.",
+        "confidence": 0.95,
+        "source_title": "A Simplified Way to Reserve Rooms at SRWC",
+        "source_url": "https://uit.stanford.edu/news/simplified-way-reserve-rooms-srwc",
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal"]
+      },
+      {
+        "id": "stanford-i1",
+        "kind": "inference",
+        "text": "A multi-building administrative campus with scheduled meeting rooms likely produces recurring group-meal demand, but Stanford may use approved vendors or internal hospitality services.",
+        "confidence": 0.84,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Campus Workplace Services / Department Administrator",
+      "channel": "campus contact path",
+      "value": "Stanford Redwood City contact page",
+      "source_url": "https://redwoodcity.stanford.edu/contact-us",
+      "confidence": 0.8,
+      "note": "No individual contact is asserted. Procurement rules should be checked before outreach."
+    },
+    "outreach_draft": "Hi Stanford Redwood City team — I saw that the Bay Road campus supports scheduled meeting spaces for Stanford teams. IHOP Redwood City offers nearby breakfast and group catering. If departments are able to use outside vendors, I’d be glad to share a simple menu and delivery options for team meetings or training days. If there is an approved-vendor process, I’m also happy to follow the appropriate procurement path.",
+    "outreach_generated_by": "AI-assisted draft; includes procurement uncertainty rather than assuming outside-vendor eligibility.",
+    "uncertainties": ["The employee-count signal is historical (2017).", "Approved-vendor or internal hospitality restrictions may apply."]
+  },
+  {
+    "id": "box-redwood-city",
+    "organization": "Box — Redwood City",
+    "category": "corporate_hq",
+    "address": "900 Jefferson Ave, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://www.box.com/about-us",
+    "score": 86,
+    "score_breakdown": {"proximity": 24, "organization_scale": 18, "event_meeting_signal": 20, "food_need_signal": 16, "contactability": 8},
+    "fit_summary": "Very close corporate headquarters and collaboration hub; strong proximity and office-scale signals, with meeting/catering demand inferred rather than directly stated.",
+    "evidence": [
+      {
+        "id": "box-f1",
+        "kind": "fact",
+        "text": "Box lists its Redwood City location at 900 Jefferson Ave and publishes a main phone number.",
+        "confidence": 0.99,
+        "source_title": "About Box — The Company",
+        "source_url": "https://www.box.com/about-us",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "contactability"]
+      },
+      {
+        "id": "box-f2",
+        "kind": "fact",
+        "text": "Box's careers site describes the Redwood City headquarters as a global hub for teams and collaboration.",
+        "confidence": 0.96,
+        "source_title": "Shaping the future from North America — Box Careers",
+        "source_url": "https://careers.box.com/en/locations/north-america/",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale", "event_meeting_signal"]
+      },
+      {
+        "id": "box-i1",
+        "kind": "inference",
+        "text": "A nearby headquarters described as a collaboration hub is a plausible buyer for team breakfasts and meeting meals, but no public source confirms catering volume.",
+        "confidence": 0.8,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Workplace Experience / Office Operations",
+      "channel": "main office phone",
+      "value": "+1 877 729 4269",
+      "source_url": "https://www.box.com/about-us",
+      "confidence": 0.97,
+      "note": "Ask to route to workplace, facilities, or office events rather than using the sales contact form."
+    },
+    "outreach_draft": "Hi Box Redwood City team — I saw that the Jefferson Avenue office is Box’s Redwood City headquarters and a hub for collaboration. IHOP Redwood City is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send your workplace team a short menu and delivery options for future team meetings, onboarding sessions, or office breakfasts if useful.",
+    "outreach_generated_by": "AI-assisted draft grounded in current Box location and careers pages.",
+    "uncertainties": ["Public sources do not confirm the office's current catering frequency or preferred vendors."]
+  },
+  {
+    "id": "sumo-logic-hq",
+    "organization": "Sumo Logic — Headquarters",
+    "category": "corporate_hq",
+    "address": "855 Main St, Suite 100, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://www.sumologic.com/contact",
+    "score": 84,
+    "score_breakdown": {"proximity": 24, "organization_scale": 17, "event_meeting_signal": 18, "food_need_signal": 17, "contactability": 8},
+    "fit_summary": "Nearby corporate headquarters with a direct, current public location and phone; meeting and meal demand are reasonable but explicitly inferred.",
+    "evidence": [
+      {
+        "id": "sumo-f1",
+        "kind": "fact",
+        "text": "Sumo Logic's official contact page says the company is headquartered at 855 Main St, Suite 100 in Redwood City and provides a public phone number.",
+        "confidence": 0.99,
+        "source_title": "Sumo Logic — Contact us",
+        "source_url": "https://www.sumologic.com/contact",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "organization_scale", "contactability"]
+      },
+      {
+        "id": "sumo-i1",
+        "kind": "inference",
+        "text": "A downtown corporate headquarters is likely to host internal meetings and team gatherings that can create catering occasions.",
+        "confidence": 0.76,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Office Manager / Workplace Operations",
+      "channel": "main office phone",
+      "value": "+1 650 810 8700",
+      "source_url": "https://www.sumologic.com/contact",
+      "confidence": 0.99,
+      "note": "Public sales email exists, but office operations is the more relevant target role for catering."
+    },
+    "outreach_draft": "Hi Sumo Logic team — I saw that your headquarters is on Main Street in Redwood City, close to IHOP on Veterans Blvd. We offer catering for breakfast and casual group meals, and I’d be happy to share a concise menu and delivery options with whoever handles workplace or office events. It could be useful for team meetings, onboarding days, or occasional office breakfasts.",
+    "outreach_generated_by": "AI-assisted draft grounded in the current official contact page.",
+    "uncertainties": ["No direct public evidence of event frequency or catering spend was found."]
+  },
+  {
+    "id": "celonis-bay-area",
+    "organization": "Celonis — Bay Area Office",
+    "category": "corporate_office",
+    "address": "811 Hamilton St, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://careers.celonis.com/join-us/offices/bay-area",
+    "score": 83,
+    "score_breakdown": {"proximity": 23, "organization_scale": 16, "event_meeting_signal": 19, "food_need_signal": 17, "contactability": 8},
+    "fit_summary": "Close downtown office whose own careers page emphasizes collaboration and connection; good lead, although food demand is inferred rather than documented.",
+    "evidence": [
+      {
+        "id": "celonis-f1",
+        "kind": "fact",
+        "text": "Celonis lists its Bay Area office at 811 Hamilton St in Redwood City.",
+        "confidence": 0.99,
+        "source_title": "Celonis Bay Area Office",
+        "source_url": "https://careers.celonis.com/join-us/offices/bay-area",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity"]
+      },
+      {
+        "id": "celonis-f2",
+        "kind": "fact",
+        "text": "The office page describes the location as a place to collaborate and connect in downtown Redwood City.",
+        "confidence": 0.96,
+        "source_title": "Celonis Bay Area Office",
+        "source_url": "https://careers.celonis.com/join-us/offices/bay-area",
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal"]
+      },
+      {
+        "id": "celonis-i1",
+        "kind": "inference",
+        "text": "A collaboration-focused office is a reasonable target for meeting catering and team meals, but public sources do not quantify occupancy or event cadence.",
+        "confidence": 0.78,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal", "organization_scale"]
+      }
+    ],
+    "contact": {
+      "role": "Workplace / Office Operations",
+      "channel": "company contact page",
+      "value": "Celonis contact form / office directory",
+      "source_url": "https://www.celonis.com/company/contact-us",
+      "confidence": 0.9,
+      "note": "No individual workplace contact was found publicly."
+    },
+    "outreach_draft": "Hi Celonis Bay Area team — I saw that your Hamilton Street office is designed around collaboration and connection in downtown Redwood City. IHOP Redwood City is nearby and offers breakfast and group catering. I’d be glad to share a short menu and delivery options with your workplace team for future meetings or office gatherings if that would be useful.",
+    "outreach_generated_by": "AI-assisted draft grounded in Celonis's current Bay Area office page.",
+    "uncertainties": ["Office occupancy, event frequency, and vendor policy are not public in the sources reviewed."]
+  },
+  {
+    "id": "ivalua-americas-hq",
+    "organization": "Ivalua — Americas Headquarters",
+    "category": "corporate_hq",
+    "address": "805 Veterans Blvd, Suite 203, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://www.ivalua.com/company/offices/",
+    "score": 82,
+    "score_breakdown": {"proximity": 24, "organization_scale": 16, "event_meeting_signal": 17, "food_need_signal": 17, "contactability": 8},
+    "fit_summary": "Extremely close Americas headquarters with a current official address and phone; compelling on convenience even though event signals are inferred.",
+    "evidence": [
+      {
+        "id": "ivalua-f1",
+        "kind": "fact",
+        "text": "Ivalua's official office directory identifies 805 Veterans Blvd, Suite 203 as its Redwood City Americas Headquarters and provides a public phone number.",
+        "confidence": 0.99,
+        "source_title": "Ivalua Worldwide Office Locations",
+        "source_url": "https://www.ivalua.com/company/offices/",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "organization_scale", "contactability"]
+      },
+      {
+        "id": "ivalua-i1",
+        "kind": "inference",
+        "text": "Because the office is an Americas headquarters only a short distance from the restaurant, it is a practical candidate for team-meeting or visitor catering.",
+        "confidence": 0.79,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Office / Workplace Operations",
+      "channel": "main office phone",
+      "value": "+1 650 930 9710",
+      "source_url": "https://www.ivalua.com/company/offices/",
+      "confidence": 0.99,
+      "note": "Route through the local office rather than using a product-sales address for a catering pitch."
+    },
+    "outreach_draft": "Hi Ivalua Redwood City team — I saw that your Americas headquarters is at 805 Veterans Blvd, very close to IHOP Redwood City. We offer breakfast and group catering, and the proximity could make delivery straightforward for team meetings or office visitors. I’d be happy to send a concise catering menu and delivery options to the person who handles workplace or office operations.",
+    "outreach_generated_by": "AI-assisted draft grounded in the official office directory.",
+    "uncertainties": ["No direct public evidence of catering demand or event cadence was found."]
+  },
+  {
+    "id": "dexterity-redwood-city",
+    "organization": "Dexterity",
+    "category": "corporate_hq",
+    "address": "1205 Veterans Blvd, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://dexterity.ai/",
+    "score": 81,
+    "score_breakdown": {"proximity": 24, "organization_scale": 16, "event_meeting_signal": 16, "food_need_signal": 17, "contactability": 8},
+    "fit_summary": "A nearby Redwood City robotics company with a public general contact and exact current address; food demand is inferred from its office/engineering presence.",
+    "evidence": [
+      {
+        "id": "dexterity-f1",
+        "kind": "fact",
+        "text": "Dexterity's official site identifies the company in Redwood City and publishes contact@dexterity.ai.",
+        "confidence": 0.99,
+        "source_title": "Dexterity — Physical AI",
+        "source_url": "https://dexterity.ai/",
+        "observed_at": "2026-08-15",
+        "supports": ["contactability"]
+      },
+      {
+        "id": "dexterity-f2",
+        "kind": "fact",
+        "text": "Dexterity's current legal contact information lists 1205 Veterans Blvd, Redwood City, CA 94063.",
+        "confidence": 0.99,
+        "source_title": "Dexterity — Terms & Conditions",
+        "source_url": "https://dexterity.ai/terms-conditions",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity"]
+      },
+      {
+        "id": "dexterity-f3",
+        "kind": "fact",
+        "text": "Dexterity describes itself as a robotics and Physical AI company founded in Redwood City with enterprise deployments.",
+        "confidence": 0.96,
+        "source_title": "Dexterity — About Us",
+        "source_url": "https://dexterity.ai/about",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale"]
+      },
+      {
+        "id": "dexterity-i1",
+        "kind": "inference",
+        "text": "A nearby engineering and corporate operation is a plausible buyer for team meals, candidate days, or group meetings, but these use cases are not directly stated by Dexterity.",
+        "confidence": 0.72,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Workplace / People Operations",
+      "channel": "public general email",
+      "value": "contact@dexterity.ai",
+      "source_url": "https://dexterity.ai/",
+      "confidence": 0.99,
+      "note": "Ask for the team responsible for office operations or employee events."
+    },
+    "outreach_draft": "Hi Dexterity team — I saw that your Redwood City operation is on Veterans Blvd, close to IHOP Redwood City. We offer breakfast and group catering that could be convenient for team meetings or office gatherings. If useful, I’d be happy to send a short catering menu and delivery options to whoever manages workplace or people operations.",
+    "outreach_generated_by": "AI-assisted draft grounded in current Dexterity public pages.",
+    "uncertainties": ["The reviewed sources do not confirm office headcount, event frequency, or outside-vendor policy."]
+  },
+  {
+    "id": "equinix-global-hq",
+    "organization": "Equinix — Global Headquarters",
+    "category": "corporate_hq",
+    "address": "One Lagoon Drive, Redwood City, CA 94065",
+    "proximity_band": "roughly 4-6 miles",
+    "website": "https://investor.equinix.com/",
+    "score": 79,
+    "score_breakdown": {"proximity": 14, "organization_scale": 20, "event_meeting_signal": 18, "food_need_signal": 19, "contactability": 8},
+    "fit_summary": "Large current headquarters with strong scale and office signals, offset by greater distance and likely enterprise procurement complexity.",
+    "evidence": [
+      {
+        "id": "equinix-f1",
+        "kind": "fact",
+        "text": "Equinix's current investor site lists its corporate office at One Lagoon Drive, Redwood City, CA 94065.",
+        "confidence": 0.99,
+        "source_title": "Equinix Investor Relations",
+        "source_url": "https://investor.equinix.com/",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "organization_scale"]
+      },
+      {
+        "id": "equinix-f2",
+        "kind": "fact",
+        "text": "A 2026 Equinix filing identifies One Lagoon Drive as the company's principal executive offices and publishes the corporate phone number.",
+        "confidence": 0.99,
+        "source_title": "Equinix 2026 SEC filing",
+        "source_url": "https://investor.equinix.com/sec-filings/all-sec-filings/content/0001101239-26-000058/eqix-20260307.htm",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale", "contactability"]
+      },
+      {
+        "id": "equinix-i1",
+        "kind": "inference",
+        "text": "A global headquarters likely has executive, employee, and visitor meetings that can create group-food demand, but procurement complexity may make conversion harder.",
+        "confidence": 0.8,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Workplace Services / Facilities",
+      "channel": "corporate office phone",
+      "value": "+1 650 598 6000",
+      "source_url": "https://investor.equinix.com/sec-filings/all-sec-filings/content/0001101239-26-000058/eqix-20260307.htm",
+      "confidence": 0.99,
+      "note": "Expect routing and vendor onboarding requirements at a company of this scale."
+    },
+    "outreach_draft": "Hi Equinix Redwood City team — I saw that One Lagoon Drive remains Equinix’s principal executive office. IHOP Redwood City offers breakfast and group catering, and I’d be happy to share a concise menu and delivery options with the team responsible for workplace services or employee events. If Equinix uses an approved-vendor process, I’m also happy to follow the appropriate onboarding path.",
+    "outreach_generated_by": "AI-assisted draft grounded in current Equinix corporate disclosures.",
+    "uncertainties": ["Enterprise procurement or approved-vendor requirements are likely but were not verified."]
+  },
+  {
+    "id": "kaiser-redwood-city",
+    "organization": "Kaiser Permanente Redwood City Medical Center",
+    "category": "hospital",
+    "address": "1100 Veterans Blvd, Redwood City, CA 94063",
+    "proximity_band": "roughly 0-1 mile",
+    "website": "https://healthy.kaiserpermanente.org/northern-california/facilities/redwood-city-medical-center-100337",
+    "score": 78,
+    "score_breakdown": {"proximity": 25, "organization_scale": 20, "event_meeting_signal": 15, "food_need_signal": 12, "contactability": 6},
+    "fit_summary": "Exceptionally close, large medical campus with many departments, but lower conversion confidence because hospitals often have internal food service and formal vendor controls.",
+    "evidence": [
+      {
+        "id": "kaiser-f1",
+        "kind": "fact",
+        "text": "Kaiser lists the Redwood City Medical Center hospital at 1100 Veterans Blvd and publishes a main information phone number.",
+        "confidence": 0.99,
+        "source_title": "Kaiser Permanente Redwood City Medical Center",
+        "source_url": "https://healthy.kaiserpermanente.org/northern-california/facilities/redwood-city-medical-center-100337",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "contactability"]
+      },
+      {
+        "id": "kaiser-f2",
+        "kind": "fact",
+        "text": "Kaiser lists numerous departments and multiple buildings across the Redwood City medical campus.",
+        "confidence": 0.98,
+        "source_title": "Departments & Specialties at Redwood City Medical Center",
+        "source_url": "https://healthy.kaiserpermanente.org/northern-california/facilities/redwood-city-medical-center-100337/departments",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale", "event_meeting_signal"]
+      },
+      {
+        "id": "kaiser-f3",
+        "kind": "fact",
+        "text": "The campus page also describes an on-site cafeteria, which is evidence of an existing food option and therefore a competitive/operational constraint.",
+        "confidence": 0.97,
+        "source_title": "Kaiser Permanente Redwood City Medical Center",
+        "source_url": "https://healthy.kaiserpermanente.org/northern-california/facilities/redwood-city-medical-center-100337",
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      },
+      {
+        "id": "kaiser-i1",
+        "kind": "inference",
+        "text": "Departments may occasionally need external food for staff meetings or trainings, but the on-site cafeteria and healthcare procurement rules reduce confidence.",
+        "confidence": 0.68,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Administrative Services / Department Coordinator",
+      "channel": "main medical center phone",
+      "value": "+1 650 299 2000",
+      "source_url": "https://healthy.kaiserpermanente.org/northern-california/health-wellness/maternity/find-hospital/redwood-city",
+      "confidence": 0.95,
+      "note": "A department-level administrative contact would be preferable, but none is invented here."
+    },
+    "outreach_draft": "Hi Kaiser Redwood City team — IHOP Redwood City is very close to the Veterans Blvd medical campus and offers breakfast and group catering. I realize the medical center has on-site food service and may have vendor restrictions, but if individual departments can order outside catering for staff meetings or trainings, I’d be happy to share a simple menu and the appropriate delivery options.",
+    "outreach_generated_by": "AI-assisted draft that explicitly acknowledges the on-site cafeteria and vendor uncertainty.",
+    "uncertainties": ["Internal cafeteria and healthcare vendor rules may substantially reduce the opportunity."]
+  },
+  {
+    "id": "informatica-hq",
+    "organization": "Informatica — Corporate Headquarters",
+    "category": "corporate_hq",
+    "address": "2100 Seaport Blvd, Redwood City, CA 94063",
+    "proximity_band": "roughly 2-4 miles",
+    "website": "https://www.informatica.com/about-us/company-information/contact-locations.html",
+    "score": 76,
+    "score_breakdown": {"proximity": 15, "organization_scale": 20, "event_meeting_signal": 17, "food_need_signal": 17, "contactability": 7},
+    "fit_summary": "Large corporate headquarters with current official address and phone, but farther from the restaurant and without direct event evidence in the reviewed sources.",
+    "evidence": [
+      {
+        "id": "informatica-f1",
+        "kind": "fact",
+        "text": "Informatica's official global office page lists 2100 Seaport Blvd in Redwood City as its corporate headquarters and provides a main phone number.",
+        "confidence": 0.99,
+        "source_title": "Informatica Global Offices",
+        "source_url": "https://www.informatica.com/about-us/company-information/contact-locations.html",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "organization_scale", "contactability"]
+      },
+      {
+        "id": "informatica-i1",
+        "kind": "inference",
+        "text": "A corporate headquarters is a plausible source of team meetings, training sessions, and visitor meals, but the reviewed official source does not document catering behavior.",
+        "confidence": 0.75,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Workplace / Facilities Operations",
+      "channel": "corporate headquarters phone",
+      "value": "+1 650 385 5000",
+      "source_url": "https://www.informatica.com/contact-us.html",
+      "confidence": 0.99,
+      "note": "Use the main corporate route to identify the local workplace owner."
+    },
+    "outreach_draft": "Hi Informatica Redwood City team — I saw that your corporate headquarters is on Seaport Blvd. IHOP Redwood City offers breakfast and group catering, and I’d be happy to send a short menu and delivery options to the team that handles workplace services or office events. If you occasionally cater team meetings, trainings, or visitor sessions, we’d be glad to be considered as a nearby option.",
+    "outreach_generated_by": "AI-assisted draft grounded in current Informatica location and contact pages.",
+    "uncertainties": ["No direct public event or catering signal was found in the sources reviewed."]
+  },
+  {
+    "id": "oracle-redwood-shores",
+    "organization": "Oracle — Redwood Shores Campus",
+    "category": "corporate_campus",
+    "address": "500 Oracle Parkway, Redwood Shores, CA 94065",
+    "proximity_band": "roughly 4-6 miles",
+    "website": "https://www.oracle.com/corporate/contact/field-offices/",
+    "score": 74,
+    "score_breakdown": {"proximity": 11, "organization_scale": 20, "event_meeting_signal": 18, "food_need_signal": 19, "contactability": 6},
+    "fit_summary": "Large active Redwood Shores campus with substantial facilities operations, but distance and likely incumbent food/vendor infrastructure lower its priority.",
+    "evidence": [
+      {
+        "id": "oracle-f1",
+        "kind": "fact",
+        "text": "Oracle's current U.S. field-office directory lists a Redwood Shores office at 500 Oracle Parkway with a public phone number.",
+        "confidence": 0.99,
+        "source_title": "Oracle United States Field Offices",
+        "source_url": "https://www.oracle.com/corporate/contact/field-offices/",
+        "observed_at": "2026-08-15",
+        "supports": ["proximity", "contactability"]
+      },
+      {
+        "id": "oracle-f2",
+        "kind": "fact",
+        "text": "A 2023 Oracle facilities article describes multiple waste containers and a facilities team operating across the Redwood Shores campus, supporting that this is a substantial active site.",
+        "confidence": 0.95,
+        "source_title": "Oracle Redwood Shores Reduced Landfill Waste Using Cutting-Edge Technology",
+        "source_url": "https://blogs.oracle.com/sustainability/oracle-redwood-shores-reduced-landfill-waste-using-cutting-edge-technology",
+        "observed_at": "2026-08-15",
+        "supports": ["organization_scale"]
+      },
+      {
+        "id": "oracle-i1",
+        "kind": "inference",
+        "text": "A large corporate campus can generate high meeting and food demand, but its scale also makes incumbent catering contracts and procurement barriers more likely.",
+        "confidence": 0.82,
+        "source_title": null,
+        "source_url": null,
+        "observed_at": "2026-08-15",
+        "supports": ["event_meeting_signal", "food_need_signal"]
+      }
+    ],
+    "contact": {
+      "role": "Facilities / Workplace Services",
+      "channel": "Redwood Shores office phone",
+      "value": "+1 650 506 7000",
+      "source_url": "https://www.oracle.com/corporate/contact/field-offices/",
+      "confidence": 0.99,
+      "note": "High-value but likely difficult to penetrate without an approved vendor path."
+    },
+    "outreach_draft": "Hi Oracle Redwood Shores team — I saw that Oracle continues to operate its Redwood Shores campus at 500 Oracle Parkway. IHOP Redwood City offers breakfast and group catering, and I’d be happy to share menu and delivery options with the facilities or workplace-services team. I recognize a campus of this size may use approved vendors, so I’m also happy to follow the appropriate vendor-onboarding process if there is one.",
+    "outreach_generated_by": "AI-assisted draft grounded in current Oracle office and facilities sources.",
+    "uncertainties": ["Existing campus food-service contracts or procurement requirements may make this lead difficult to convert."]
+  }
+]

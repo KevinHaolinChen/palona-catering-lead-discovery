@@ -1,0 +1,207 @@
+package com.palona.cateringleads.service;
+
+import com.palona.cateringleads.model.DiscoveryCandidate;
+import com.palona.cateringleads.model.ScoreBreakdown;
+import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+@Service
+public class DiscoveryService {
+
+    private static final URI OVERPASS_URL = URI.create("https://overpass-api.de/api/interpreter");
+    private static final String USER_AGENT = "palona-catering-lead-demo/1.0 (take-home project)";
+
+    private final JsonMapper jsonMapper;
+    private final ScoringService scoringService;
+    private final HttpClient httpClient;
+
+    public DiscoveryService(JsonMapper jsonMapper, ScoringService scoringService) {
+        this.jsonMapper = jsonMapper;
+        this.scoringService = scoringService;
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    /**
+     * Discovers named nearby organizations from OpenStreetMap/Overpass.
+     * These are candidates, not verified sales leads; direct-source enrichment is a later stage.
+     */
+    public List<DiscoveryCandidate> discover(double latitude, double longitude, int radiusMeters) {
+        String query = """
+                [out:json][timeout:20];
+                (
+                  nwr(around:%d,%f,%f)[name][office];
+                  nwr(around:%d,%f,%f)[name][amenity~\"hospital|clinic|university|college|school|conference_centre|community_centre\"];
+                );
+                out center tags;
+                """.formatted(radiusMeters, latitude, longitude, radiusMeters, latitude, longitude);
+
+        HttpRequest request = HttpRequest.newBuilder(OVERPASS_URL)
+                .timeout(Duration.ofSeconds(25))
+                .header("User-Agent", USER_AGENT)
+                .header("Content-Type", "text/plain; charset=utf-8")
+                .POST(HttpRequest.BodyPublishers.ofString(query))
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalStateException("Overpass returned HTTP " + response.statusCode());
+            }
+            return parseCandidates(jsonMapper.readTree(response.body()), latitude, longitude);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Live discovery was interrupted", exception);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Live discovery source unavailable", exception);
+        }
+    }
+
+    private List<DiscoveryCandidate> parseCandidates(JsonNode root, double originLat, double originLon) {
+        List<DiscoveryCandidate> candidates = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        JsonNode elements = root.get("elements");
+        if (elements == null || !elements.isArray()) {
+            return List.of();
+        }
+
+        for (JsonNode element : elements) {
+            JsonNode tags = element.get("tags");
+            if (tags == null || !tags.isObject()) {
+                continue;
+            }
+            String name = text(tags, "name");
+            if (name == null || name.isBlank()) {
+                continue;
+            }
+
+            Double lat = number(element, "lat");
+            Double lon = number(element, "lon");
+            JsonNode center = element.get("center");
+            if (lat == null && center != null) {
+                lat = number(center, "lat");
+            }
+            if (lon == null && center != null) {
+                lon = number(center, "lon");
+            }
+            if (lat == null || lon == null) {
+                continue;
+            }
+
+            String address = joinNonBlank(
+                    text(tags, "addr:housenumber"),
+                    text(tags, "addr:street"),
+                    text(tags, "addr:city"),
+                    text(tags, "addr:state"),
+                    text(tags, "addr:postcode")
+            );
+            if (address.isBlank()) {
+                address = "Address not available from source";
+            }
+
+            String dedupeKey = (name + "|" + address).toLowerCase(Locale.ROOT);
+            if (!seen.add(dedupeKey)) {
+                continue;
+            }
+
+            String category = classify(tags);
+            ScoreBreakdown breakdown = scoringService.heuristicScore(category);
+            String type = text(element, "type");
+            String id = element.get("id") == null ? "" : element.get("id").asText();
+
+            candidates.add(new DiscoveryCandidate(
+                    name,
+                    category,
+                    address,
+                    firstNonBlank(text(tags, "website"), text(tags, "contact:website")),
+                    firstNonBlank(text(tags, "phone"), text(tags, "contact:phone")),
+                    round2(distanceMiles(originLat, originLon, lat, lon)),
+                    "https://www.openstreetmap.org/" + type + "/" + id,
+                    "OpenStreetMap via Overpass",
+                    breakdown.total(),
+                    breakdown
+            ));
+        }
+
+        return candidates.stream()
+                .sorted(Comparator.comparingDouble(DiscoveryCandidate::distanceMiles))
+                .limit(40)
+                .toList();
+    }
+
+    private static String classify(JsonNode tags) {
+        String amenity = text(tags, "amenity");
+        String office = text(tags, "office");
+        if ("hospital".equals(amenity) || "clinic".equals(amenity)) {
+            return "hospital";
+        }
+        if (Set.of("university", "college", "school").contains(amenity)) {
+            return "university_campus";
+        }
+        if ("conference_centre".equals(amenity) || "community_centre".equals(amenity)) {
+            return "community_event_space";
+        }
+        if (office != null && !office.isBlank()) {
+            return "corporate_office";
+        }
+        return "organization";
+    }
+
+    private static double distanceMiles(double lat1, double lon1, double lat2, double lon2) {
+        double earthRadiusMiles = 3958.7613;
+        double p1 = Math.toRadians(lat1);
+        double p2 = Math.toRadians(lat2);
+        double dPhi = Math.toRadians(lat2 - lat1);
+        double dLambda = Math.toRadians(lon2 - lon1);
+        double a = Math.pow(Math.sin(dPhi / 2), 2)
+                + Math.cos(p1) * Math.cos(p2) * Math.pow(Math.sin(dLambda / 2), 2);
+        return 2 * earthRadiusMiles * Math.asin(Math.sqrt(a));
+    }
+
+    private static double round2(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
+    private static String text(JsonNode node, String field) {
+        JsonNode child = node.get(field);
+        return child == null || child.isNull() ? null : child.asText();
+    }
+
+    private static Double number(JsonNode node, String field) {
+        JsonNode child = node.get(field);
+        return child == null || !child.isNumber() ? null : child.asDouble();
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        return first != null && !first.isBlank() ? first : second;
+    }
+
+    private static String joinNonBlank(String... parts) {
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (part == null || part.isBlank()) {
+                continue;
+            }
+            if (!result.isEmpty()) {
+                result.append(' ');
+            }
+            result.append(part);
+        }
+        return result.toString();
+    }
+}
