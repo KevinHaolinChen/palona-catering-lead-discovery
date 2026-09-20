@@ -71,6 +71,10 @@ public class ProspectIntelligenceService {
         return key != null && !key.isBlank();
     }
 
+    public String configuredModel() {
+        return System.getenv().getOrDefault("OPENAI_MODEL", "gpt-5.6-luna");
+    }
+
     private Context loadContext(String prospectId) {
         DiscoveredProspectEntity prospect = prospectRepository.findById(prospectId)
                 .orElseThrow(() -> new IllegalArgumentException("Prospect not found: " + prospectId));
@@ -99,7 +103,7 @@ public class ProspectIntelligenceService {
 
     private ProspectInsightResponse generateWithOpenAi(Context context) {
         String apiKey = System.getenv("OPENAI_API_KEY");
-        String model = System.getenv().getOrDefault("OPENAI_MODEL", "gpt-5.6-luna");
+        String model = configuredModel();
 
         String prompt = """
                 You are the grounded prospect-intelligence layer for Gather Radius, a restaurant B2B growth product.
