@@ -15,6 +15,7 @@ public class CampaignEntity {
     private double latitude;
     private double longitude;
     private int radiusMeters;
+    private boolean supportsCatering;
     private Instant createdAt;
 
     protected CampaignEntity() {}
