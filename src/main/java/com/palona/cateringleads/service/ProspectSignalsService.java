@@ -11,6 +11,7 @@ public class ProspectSignalsService {
     private final DiscoveredProspectRepository prospectRepository;
     private final DiscoveryRunRepository runRepository;
     private final CampaignRepository campaignRepository;
+    private final EnrichmentService enrichmentService;
 
     public ProspectSignalsService(
             DiscoveredProspectRepository prospectRepository,
