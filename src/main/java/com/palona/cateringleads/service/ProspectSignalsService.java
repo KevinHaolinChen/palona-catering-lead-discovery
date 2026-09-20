@@ -16,7 +16,8 @@ public class ProspectSignalsService {
     public ProspectSignalsService(
             DiscoveredProspectRepository prospectRepository,
             DiscoveryRunRepository runRepository,
-            CampaignRepository campaignRepository
+            CampaignRepository campaignRepository,
+            EnrichmentService enrichmentService
     ) {
         this.prospectRepository = prospectRepository;
         this.runRepository = runRepository;
