@@ -1,14 +1,14 @@
-# VerityScout — Restaurant Prospect Intelligence
+# Gather — Restaurant Prospect Intelligence
 
-VerityScout is a Java/Spring Boot application that helps restaurants discover and prioritize nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
+Gather is a Java/Spring Boot application that helps restaurants discover and prioritize nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
 
-The project started as a single-location catering discovery prototype. v0.3 removes the fixed restaurant and fixed-city assumptions: a user now enters **their own restaurant name, type, address, and search radius**, and VerityScout builds a location-specific discovery run from that profile.
+The project started as a single-location catering discovery prototype. v0.3 removes the fixed restaurant and fixed-city assumptions: a user now enters **their own restaurant name, type, address, and search radius**, and Gather builds a location-specific discovery run from that profile.
 
 ## Product thesis
 
 Restaurants often have valuable organizations nearby — offices, campuses, hospitals, schools, community spaces, and event venues — but turning a neighborhood into a useful outbound list is manual.
 
-VerityScout asks:
+Gather asks:
 
 > **Which nearby organizations are worth contacting, why are they ranked highly, and what public source supports the recommendation?**
 
@@ -76,6 +76,24 @@ Flyway manages:
 - `discovered_prospects`
 
 Docker uses PostgreSQL 17. Local/test mode uses H2 in PostgreSQL compatibility mode.
+
+## Enable generative AI
+
+Gather keeps ranking deterministic and explainable, then uses generative AI for prospect-specific analysis and outreach drafts.
+
+Set an OpenAI API key before starting the app:
+
+```bash
+OPENAI_API_KEY=your_key_here
+```
+
+Optional model override:
+
+```bash
+OPENAI_MODEL=gpt-5.6-luna
+```
+
+If `OPENAI_API_KEY` is missing or an AI request fails, Gather labels the result as a **heuristic fallback** rather than presenting template output as generated AI.
 
 ## Run locally
 
@@ -175,7 +193,7 @@ Proximity uses actual distance. Contactability uses available public website/pho
 
 ## Positioning
 
-VerityScout is not trying to be another giant contact database.
+Gather is not trying to be another giant contact database.
 
 Its wedge is:
 
