@@ -61,11 +61,10 @@ public class ProspectController {
             );
             return new DiscoveryResponse(candidates.size(), candidates);
         } catch (Exception exception) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Live discovery source unavailable.",
-                    exception
-            );
+            String detail = exception.getMessage() == null || exception.getMessage().isBlank()
+                    ? "Discovery provider failed."
+                    : exception.getMessage();
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, detail, exception);
         }
     }
 
