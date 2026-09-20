@@ -3,14 +3,17 @@ package com.palona.cateringleads.service;
 import com.palona.cateringleads.model.DiscoveryCandidate;
 import com.palona.cateringleads.model.ScoreBreakdown;
 import com.palona.cateringleads.model.SearchCriteria;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,20 +25,30 @@ import java.util.Set;
 @Service
 public class DiscoveryService implements ProspectSource {
 
-    private static final URI OVERPASS_URL = URI.create("https://overpass-api.de/api/interpreter");
-    private static final String USER_AGENT = "verityscout/0.2 (evidence-backed prospect intelligence)";
+    private static final String USER_AGENT =
+            "VerityScout/0.4 (+https://github.com/KevinHaolinChen/verityscout)";
 
     private final JsonMapper jsonMapper;
     private final ScoringService scoringService;
     private final HttpClient httpClient;
+    private final List<URI> overpassUrls;
 
-    public DiscoveryService(JsonMapper jsonMapper, ScoringService scoringService) {
+    public DiscoveryService(
+            JsonMapper jsonMapper,
+            ScoringService scoringService,
+            @Value("${verityscout.discovery.overpass-urls:https://overpass.private.coffee/api/interpreter,https://overpass-api.de/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter}") String configuredUrls
+    ) {
         this.jsonMapper = jsonMapper;
         this.scoringService = scoringService;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
+        this.overpassUrls = List.of(configuredUrls.split(",")).stream()
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(URI::create)
+                .toList();
     }
 
     @Override
@@ -50,47 +63,68 @@ public class DiscoveryService implements ProspectSource {
 
     public List<DiscoveryCandidate> discover(double latitude, double longitude, int radiusMeters) {
         String query = """
-                [out:json][timeout:20];
+                [out:json][timeout:18];
                 (
                   nwr(around:%d,%f,%f)[name][office];
                   nwr(around:%d,%f,%f)[name][amenity~"hospital|clinic|university|college|school|conference_centre|community_centre"];
                 );
-                out center tags;
+                out center tags qt;
                 """.formatted(radiusMeters, latitude, longitude, radiusMeters, latitude, longitude);
 
-        HttpRequest request = HttpRequest.newBuilder(OVERPASS_URL)
-                .timeout(Duration.ofSeconds(25))
-                .header("User-Agent", USER_AGENT)
-                .header("Content-Type", "text/plain; charset=utf-8")
-                .POST(HttpRequest.BodyPublishers.ofString(query))
-                .build();
-
-        HttpResponse<String> response = RetryExecutor.withBackoff(
-                3,
-                Duration.ofMillis(300),
-                () -> execute(request)
-        );
-
-        try {
-            return parseCandidates(jsonMapper.readTree(response.body()), latitude, longitude);
-        } catch (Exception exception) {
-            throw new IllegalStateException("Unable to parse live discovery response", exception);
+        List<String> failures = new ArrayList<>();
+        for (URI endpoint : overpassUrls) {
+            try {
+                HttpResponse<String> response = RetryExecutor.withBackoff(
+                        2,
+                        Duration.ofMillis(350),
+                        () -> execute(endpoint, query)
+                );
+                return parseCandidates(jsonMapper.readTree(response.body()), latitude, longitude);
+            } catch (Exception exception) {
+                failures.add(endpoint.getHost() + ": " + rootMessage(exception));
+            }
         }
+
+        throw new IllegalStateException(
+                "All discovery providers failed. " + String.join(" | ", failures)
+                + ". Try again shortly or reduce the search radius."
+        );
     }
 
-    private HttpResponse<String> execute(HttpRequest request) {
+    private HttpResponse<String> execute(URI endpoint, String query) {
+        String body = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+        HttpRequest request = HttpRequest.newBuilder(endpoint)
+                .timeout(Duration.ofSeconds(24))
+                .header("User-Agent", USER_AGENT)
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("Overpass returned HTTP " + response.statusCode());
+                throw new IllegalStateException("HTTP " + response.statusCode());
+            }
+            if (response.body() == null || response.body().isBlank()) {
+                throw new IllegalStateException("empty response");
             }
             return response;
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Live discovery was interrupted", exception);
+            throw new IllegalStateException("request interrupted", exception);
         } catch (java.io.IOException exception) {
-            throw new IllegalStateException("Live discovery source unavailable", exception);
+            throw new IllegalStateException(exception.getClass().getSimpleName() + ": " + exception.getMessage(), exception);
         }
+    }
+
+    private static String rootMessage(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null) current = current.getCause();
+        String message = current.getMessage();
+        return message == null || message.isBlank()
+                ? current.getClass().getSimpleName()
+                : message.replaceAll("\\s+", " ").trim();
     }
 
     private List<DiscoveryCandidate> parseCandidates(JsonNode root, double originLat, double originLon) {
