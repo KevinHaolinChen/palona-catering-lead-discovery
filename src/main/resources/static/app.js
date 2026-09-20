@@ -19,6 +19,8 @@ const prospectList = document.getElementById('prospects');
 const minScore = document.getElementById('minScore');
 const scoreValue = document.getElementById('scoreValue');
 const sortBy = document.getElementById('sortBy');
+const radius = document.getElementById('radius');
+const radiusValue = document.getElementById('radiusValue');
 
 const state = {
   selectedRestaurant: null,
@@ -78,6 +80,11 @@ function setRunBadge(status) {
   else if (normalized === 'COMPLETED') runBadge.classList.add('complete');
   else if (normalized === 'FAILED') runBadge.classList.add('failed');
   else runBadge.classList.add('idle');
+}
+
+function updateRadiusDisplay() {
+  const miles = Number(radius.value);
+  radiusValue.textContent = miles >= 50 ? '50+ mi' : `${miles} mi`;
 }
 
 function humanize(value) {
@@ -385,7 +392,8 @@ async function handleCampaignSubmit(event) {
   }
 
   const restaurantType = inferRestaurantType(restaurant);
-  const radiusMeters = Number(document.getElementById('radius').value);
+  const radiusMiles = Number(radius.value);
+  const radiusMeters = Math.round(radiusMiles * 1609.344);
 
   runButton.disabled = true;
   runButton.querySelector('span:first-child').textContent = 'Building prospect map…';
@@ -467,9 +475,11 @@ changeRestaurant.addEventListener('click', () => {
 });
 
 campaignForm.addEventListener('submit', handleCampaignSubmit);
+radius.addEventListener('input', updateRadiusDisplay);
 minScore.addEventListener('input', renderProspects);
 sortBy.addEventListener('change', renderProspects);
 
+updateRadiusDisplay();
 requestLiveLocation();
 
 
