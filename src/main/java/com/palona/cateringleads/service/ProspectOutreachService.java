@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class ProspectOutreachService {
 
     private static final Pattern EMAIL = Pattern.compile(
-            "(?i)(?<![A-Z0-9._%+-])([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})(?![A-Z0-9._%+-])"
+            "(?i)\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,63})\\b"
     );
     private static final List<String> COMMON_CONTACT_PATHS = List.of("", "/contact", "/contact-us");
     private static final List<String> PREFERRED_PREFIXES = List.of(
