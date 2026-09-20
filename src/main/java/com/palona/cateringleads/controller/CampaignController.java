@@ -4,6 +4,7 @@ import com.palona.cateringleads.model.CampaignCreateRequest;
 import com.palona.cateringleads.model.CampaignResponse;
 import com.palona.cateringleads.model.DiscoveryRunResponse;
 import com.palona.cateringleads.model.GeocodeResponse;
+import com.palona.cateringleads.model.RestaurantSearchResult;
 import com.palona.cateringleads.persistence.DiscoveredProspectEntity;
 import com.palona.cateringleads.persistence.DiscoveredProspectRepository;
 import com.palona.cateringleads.service.CampaignService;
@@ -39,6 +40,11 @@ public class CampaignController {
     @GetMapping("/campaigns")
     public List<CampaignResponse> campaigns() {
         return campaignService.findAll();
+    }
+
+    @GetMapping("/restaurants/search")
+    public List<RestaurantSearchResult> restaurantSearch(@RequestParam("q") String query) {
+        return geocodingService.searchRestaurants(query);
     }
 
     @GetMapping("/geocode")
