@@ -6,15 +6,18 @@ import com.palona.cateringleads.model.DiscoveryRunResponse;
 import com.palona.cateringleads.model.GeocodeResponse;
 import com.palona.cateringleads.model.RestaurantSearchResult;
 import com.palona.cateringleads.model.ProspectOutreachResponse;
+import com.palona.cateringleads.model.ProspectInsightResponse;
 import com.palona.cateringleads.persistence.DiscoveredProspectEntity;
 import com.palona.cateringleads.persistence.DiscoveredProspectRepository;
 import com.palona.cateringleads.service.CampaignService;
 import com.palona.cateringleads.service.GeocodingService;
 import com.palona.cateringleads.service.ProspectOutreachService;
+import com.palona.cateringleads.service.ProspectIntelligenceService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -23,17 +26,20 @@ public class CampaignController {
     private final DiscoveredProspectRepository prospectRepository;
     private final GeocodingService geocodingService;
     private final ProspectOutreachService prospectOutreachService;
+    private final ProspectIntelligenceService prospectIntelligenceService;
 
     public CampaignController(
             CampaignService campaignService,
             DiscoveredProspectRepository prospectRepository,
             GeocodingService geocodingService,
-            ProspectOutreachService prospectOutreachService
+            ProspectOutreachService prospectOutreachService,
+            ProspectIntelligenceService prospectIntelligenceService
     ) {
         this.campaignService = campaignService;
         this.prospectRepository = prospectRepository;
         this.geocodingService = geocodingService;
         this.prospectOutreachService = prospectOutreachService;
+        this.prospectIntelligenceService = prospectIntelligenceService;
     }
 
     @PostMapping("/campaigns")
@@ -77,8 +83,21 @@ public class CampaignController {
         return prospectRepository.findByRunIdOrderByScoreDesc(runId);
     }
 
+    @PostMapping("/discovered-prospects/{prospectId}/insight")
+    public ProspectInsightResponse prospectInsight(@PathVariable String prospectId) {
+        return prospectIntelligenceService.analyze(prospectId);
+    }
+
     @PostMapping("/discovered-prospects/{prospectId}/outreach")
     public ProspectOutreachResponse prepareOutreach(@PathVariable String prospectId) {
         return prospectOutreachService.prepare(prospectId);
+    }
+
+    @GetMapping("/ai/status")
+    public Map<String, Object> aiStatus() {
+        return Map.of(
+                "enabled", prospectIntelligenceService.llmAvailable(),
+                "model", prospectIntelligenceService.configuredModel()
+        );
     }
 }
