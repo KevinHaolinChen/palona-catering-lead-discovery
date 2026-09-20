@@ -49,7 +49,7 @@
       "confidence": 0.99,
       "note": "Use the public space-operations path rather than inventing an individual contact."
     },
-    "outreach_draft": "Hi Community Space team — I saw that the Redwood City Community Space hosts daytime and evening meetings and events for local organizations. IHOP Redwood City on Veterans Blvd offers catering that could be useful for breakfast meetings or casual group meals. If outside food vendors are permitted, would it be helpful if I sent a simple group-order menu and delivery options for upcoming events?",
+    "outreach_draft": "Hi Community Space team — I saw that the Redwood City Community Space hosts daytime and evening meetings and events for local organizations. your restaurant on Veterans Blvd offers catering that could be useful for breakfast meetings or casual group meals. If outside food vendors are permitted, would it be helpful if I sent a simple group-order menu and delivery options for upcoming events?",
     "outreach_generated_by": "AI-assisted draft; restricted to cited facts plus the explicitly labeled outside-vendor uncertainty.",
     "uncertainties": ["The public guidelines do not confirm whether outside catering is permitted for every event."]
   },
@@ -103,7 +103,7 @@
       "confidence": 0.99,
       "note": "Ask to be routed to the person handling office events, hospitality, or workplace services."
     },
-    "outreach_draft": "Hi Goodwin Silicon Valley team — I noticed your Redwood City office hosts in-person programs and receptions. IHOP Redwood City is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send a concise catering menu and delivery options for future internal meetings or office events if that would be useful to your workplace or events team.",
+    "outreach_draft": "Hi Goodwin Silicon Valley team — I noticed your Redwood City office hosts in-person programs and receptions. your restaurant is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send a concise catering menu and delivery options for future internal meetings or office events if that would be useful to your workplace or events team.",
     "outreach_generated_by": "AI-assisted draft grounded in the official office and event pages.",
     "uncertainties": ["Public sources do not identify Goodwin's catering vendor policy or event frequency."]
   },
@@ -167,7 +167,7 @@
       "confidence": 0.8,
       "note": "No individual contact is asserted. Procurement rules should be checked before outreach."
     },
-    "outreach_draft": "Hi Stanford Redwood City team — I saw that the Bay Road campus supports scheduled meeting spaces for Stanford teams. IHOP Redwood City offers nearby breakfast and group catering. If departments are able to use outside vendors, I’d be glad to share a simple menu and delivery options for team meetings or training days. If there is an approved-vendor process, I’m also happy to follow the appropriate procurement path.",
+    "outreach_draft": "Hi Stanford Redwood City team — I saw that the Bay Road campus supports scheduled meeting spaces for Stanford teams. your restaurant offers nearby breakfast and group catering. If departments are able to use outside vendors, I’d be glad to share a simple menu and delivery options for team meetings or training days. If there is an approved-vendor process, I’m also happy to follow the appropriate procurement path.",
     "outreach_generated_by": "AI-assisted draft; includes procurement uncertainty rather than assuming outside-vendor eligibility.",
     "uncertainties": ["The employee-count signal is historical (2017).", "Approved-vendor or internal hospitality restrictions may apply."]
   },
@@ -221,7 +221,7 @@
       "confidence": 0.97,
       "note": "Ask to route to workplace, facilities, or office events rather than using the sales contact form."
     },
-    "outreach_draft": "Hi Box Redwood City team — I saw that the Jefferson Avenue office is Box’s Redwood City headquarters and a hub for collaboration. IHOP Redwood City is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send your workplace team a short menu and delivery options for future team meetings, onboarding sessions, or office breakfasts if useful.",
+    "outreach_draft": "Hi Box Redwood City team — I saw that the Jefferson Avenue office is Box’s Redwood City headquarters and a hub for collaboration. your restaurant is nearby on Veterans Blvd and offers catering for breakfast and group meals. I’d be happy to send your workplace team a short menu and delivery options for future team meetings, onboarding sessions, or office breakfasts if useful.",
     "outreach_generated_by": "AI-assisted draft grounded in current Box location and careers pages.",
     "uncertainties": ["Public sources do not confirm the office's current catering frequency or preferred vendors."]
   },
@@ -265,7 +265,7 @@
       "confidence": 0.99,
       "note": "Public sales email exists, but office operations is the more relevant target role for catering."
     },
-    "outreach_draft": "Hi Sumo Logic team — I saw that your headquarters is on Main Street in Redwood City, close to IHOP on Veterans Blvd. We offer catering for breakfast and casual group meals, and I’d be happy to share a concise menu and delivery options with whoever handles workplace or office events. It could be useful for team meetings, onboarding days, or occasional office breakfasts.",
+    "outreach_draft": "Hi Sumo Logic team — I saw that your headquarters is on Main Street in Redwood City, close to your restaurant. We offer catering for breakfast and casual group meals, and I’d be happy to share a concise menu and delivery options with whoever handles workplace or office events. It could be useful for team meetings, onboarding days, or occasional office breakfasts.",
     "outreach_generated_by": "AI-assisted draft grounded in the current official contact page.",
     "uncertainties": ["No direct public evidence of event frequency or catering spend was found."]
   },
@@ -319,7 +319,7 @@
       "confidence": 0.9,
       "note": "No individual workplace contact was found publicly."
     },
-    "outreach_draft": "Hi Celonis Bay Area team — I saw that your Hamilton Street office is designed around collaboration and connection in downtown Redwood City. IHOP Redwood City is nearby and offers breakfast and group catering. I’d be glad to share a short menu and delivery options with your workplace team for future meetings or office gatherings if that would be useful.",
+    "outreach_draft": "Hi Celonis Bay Area team — I saw that your Hamilton Street office is designed around collaboration and connection in downtown Redwood City. your restaurant is nearby and offers breakfast and group catering. I’d be glad to share a short menu and delivery options with your workplace team for future meetings or office gatherings if that would be useful.",
     "outreach_generated_by": "AI-assisted draft grounded in Celonis's current Bay Area office page.",
     "uncertainties": ["Office occupancy, event frequency, and vendor policy are not public in the sources reviewed."]
   },
@@ -363,7 +363,7 @@
       "confidence": 0.99,
       "note": "Route through the local office rather than using a product-sales address for a catering pitch."
     },
-    "outreach_draft": "Hi Ivalua Redwood City team — I saw that your Americas headquarters is at 805 Veterans Blvd, very close to IHOP Redwood City. We offer breakfast and group catering, and the proximity could make delivery straightforward for team meetings or office visitors. I’d be happy to send a concise catering menu and delivery options to the person who handles workplace or office operations.",
+    "outreach_draft": "Hi Ivalua Redwood City team — I saw that your Americas headquarters is at 805 Veterans Blvd, very close to your restaurant. We offer breakfast and group catering, and the proximity could make delivery straightforward for team meetings or office visitors. I’d be happy to send a concise catering menu and delivery options to the person who handles workplace or office operations.",
     "outreach_generated_by": "AI-assisted draft grounded in the official office directory.",
     "uncertainties": ["No direct public evidence of catering demand or event cadence was found."]
   },
@@ -427,7 +427,7 @@
       "confidence": 0.99,
       "note": "Ask for the team responsible for office operations or employee events."
     },
-    "outreach_draft": "Hi Dexterity team — I saw that your Redwood City operation is on Veterans Blvd, close to IHOP Redwood City. We offer breakfast and group catering that could be convenient for team meetings or office gatherings. If useful, I’d be happy to send a short catering menu and delivery options to whoever manages workplace or people operations.",
+    "outreach_draft": "Hi Dexterity team — I saw that your Redwood City operation is on Veterans Blvd, close to your restaurant. We offer breakfast and group catering that could be convenient for team meetings or office gatherings. If useful, I’d be happy to send a short catering menu and delivery options to whoever manages workplace or people operations.",
     "outreach_generated_by": "AI-assisted draft grounded in current Dexterity public pages.",
     "uncertainties": ["The reviewed sources do not confirm office headcount, event frequency, or outside-vendor policy."]
   },
@@ -481,7 +481,7 @@
       "confidence": 0.99,
       "note": "Expect routing and vendor onboarding requirements at a company of this scale."
     },
-    "outreach_draft": "Hi Equinix Redwood City team — I saw that One Lagoon Drive remains Equinix’s principal executive office. IHOP Redwood City offers breakfast and group catering, and I’d be happy to share a concise menu and delivery options with the team responsible for workplace services or employee events. If Equinix uses an approved-vendor process, I’m also happy to follow the appropriate onboarding path.",
+    "outreach_draft": "Hi Equinix Redwood City team — I saw that One Lagoon Drive remains Equinix’s principal executive office. your restaurant offers breakfast and group catering, and I’d be happy to share a concise menu and delivery options with the team responsible for workplace services or employee events. If Equinix uses an approved-vendor process, I’m also happy to follow the appropriate onboarding path.",
     "outreach_generated_by": "AI-assisted draft grounded in current Equinix corporate disclosures.",
     "uncertainties": ["Enterprise procurement or approved-vendor requirements are likely but were not verified."]
   },
@@ -545,7 +545,7 @@
       "confidence": 0.95,
       "note": "A department-level administrative contact would be preferable, but none is invented here."
     },
-    "outreach_draft": "Hi Kaiser Redwood City team — IHOP Redwood City is very close to the Veterans Blvd medical campus and offers breakfast and group catering. I realize the medical center has on-site food service and may have vendor restrictions, but if individual departments can order outside catering for staff meetings or trainings, I’d be happy to share a simple menu and the appropriate delivery options.",
+    "outreach_draft": "Hi Kaiser Redwood City team — your restaurant is very close to the Veterans Blvd medical campus and offers breakfast and group catering. I realize the medical center has on-site food service and may have vendor restrictions, but if individual departments can order outside catering for staff meetings or trainings, I’d be happy to share a simple menu and the appropriate delivery options.",
     "outreach_generated_by": "AI-assisted draft that explicitly acknowledges the on-site cafeteria and vendor uncertainty.",
     "uncertainties": ["Internal cafeteria and healthcare vendor rules may substantially reduce the opportunity."]
   },
@@ -589,7 +589,7 @@
       "confidence": 0.99,
       "note": "Use the main corporate route to identify the local workplace owner."
     },
-    "outreach_draft": "Hi Informatica Redwood City team — I saw that your corporate headquarters is on Seaport Blvd. IHOP Redwood City offers breakfast and group catering, and I’d be happy to send a short menu and delivery options to the team that handles workplace services or office events. If you occasionally cater team meetings, trainings, or visitor sessions, we’d be glad to be considered as a nearby option.",
+    "outreach_draft": "Hi Informatica Redwood City team — I saw that your corporate headquarters is on Seaport Blvd. your restaurant offers breakfast and group catering, and I’d be happy to send a short menu and delivery options to the team that handles workplace services or office events. If you occasionally cater team meetings, trainings, or visitor sessions, we’d be glad to be considered as a nearby option.",
     "outreach_generated_by": "AI-assisted draft grounded in current Informatica location and contact pages.",
     "uncertainties": ["No direct public event or catering signal was found in the sources reviewed."]
   },
@@ -643,7 +643,7 @@
       "confidence": 0.99,
       "note": "High-value but likely difficult to penetrate without an approved vendor path."
     },
-    "outreach_draft": "Hi Oracle Redwood Shores team — I saw that Oracle continues to operate its Redwood Shores campus at 500 Oracle Parkway. IHOP Redwood City offers breakfast and group catering, and I’d be happy to share menu and delivery options with the facilities or workplace-services team. I recognize a campus of this size may use approved vendors, so I’m also happy to follow the appropriate vendor-onboarding process if there is one.",
+    "outreach_draft": "Hi Oracle Redwood Shores team — I saw that Oracle continues to operate its Redwood Shores campus at 500 Oracle Parkway. your restaurant offers breakfast and group catering, and I’d be happy to share menu and delivery options with the facilities or workplace-services team. I recognize a campus of this size may use approved vendors, so I’m also happy to follow the appropriate vendor-onboarding process if there is one.",
     "outreach_generated_by": "AI-assisted draft grounded in current Oracle office and facilities sources.",
     "uncertainties": ["Existing campus food-service contracts or procurement requirements may make this lead difficult to convert."]
   }
