@@ -1,78 +1,112 @@
-# VerityScout — Evidence-backed B2B Prospect Intelligence
+# VerityScout — Restaurant Prospect Intelligence
 
-VerityScout is a Java/Spring Boot backend for discovering and prioritizing B2B prospects **without hiding why a lead was recommended**.
+VerityScout is a Java/Spring Boot application that helps restaurants discover and prioritize nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
 
-It began as a Palona engineering take-home for IHOP Redwood City catering leads. v0.2 productizes the reusable idea underneath that assignment: campaign-based prospect discovery with source provenance, explainable scoring, persistent run history, bounded enrichment, and grounded outreach.
+The project started as a single-location catering discovery prototype. v0.3 removes the fixed restaurant and fixed-city assumptions: a user now enters **their own restaurant name, type, address, and search radius**, and VerityScout builds a location-specific discovery run from that profile.
 
 ## Product thesis
 
-Most prospecting tools optimize for breadth: more contacts, more enrichment, more sequences.
+Restaurants often have valuable organizations nearby — offices, campuses, hospitals, schools, community spaces, and event venues — but turning a neighborhood into a useful outbound list is manual.
 
-VerityScout focuses on an adjacent problem:
+VerityScout asks:
 
-> **Can a seller audit exactly why this account is worth contacting, which source supports each claim, how fresh/conflicted that evidence is, and how that evidence affected the score?**
+> **Which nearby organizations are worth contacting, why are they ranked highly, and what public source supports the recommendation?**
 
-That makes the core object an evidence-backed recommendation rather than a row in a contact database.
+The core object is an explainable prospect recommendation rather than an opaque contact row.
+
+## Current user flow
+
+```text
+Restaurant name + type + address
+  -> address geocoding
+  -> restaurant campaign
+  -> discovery run
+  -> nearby organization discovery
+  -> canonicalization / dedupe
+  -> explainable scoring
+  -> persisted prospect list
+  -> source-linked review
+```
+
+The frontend at `http://localhost:8000` now drives this flow directly.
+
+## What makes it restaurant-agnostic
+
+There is no hard-coded restaurant identity in the primary workflow.
+
+Each campaign stores:
+- restaurant name
+- restaurant type
+- normalized origin address
+- latitude / longitude
+- search radius
+
+That lets the same application run for a cafe in San Francisco, a pizza shop in Oakland, a breakfast restaurant in San Jose, or a catering-focused operation in another market.
+
+The current ranking is still a **cold-start catering/group-order heuristic**. Restaurant type is persisted so future scoring can learn different ideal-customer profiles instead of pretending every restaurant converts the same kinds of accounts.
 
 ## Architecture
 
 ```text
-Campaign
+Restaurant Campaign
   -> Discovery Run
   -> Prospect Sources
   -> Canonicalization / dedupe
   -> Persisted candidates
-  -> Enrichment
-  -> Claim-level evidence
+  -> Evidence enrichment (next)
   -> Explainable scoring
-  -> Grounded outreach
+  -> Grounded outreach (next)
   -> Outcome feedback (next)
 ```
 
-Current source adapter:
-- OpenStreetMap / Overpass for high-recall geographic discovery
+### Discovery
+- OpenStreetMap / Overpass for geographic organization discovery
+- actual restaurant coordinates drive proximity scoring
+- public website/phone availability drives contactability
 
-Current enrichment:
-- bounded direct public-page retrieval
-- public-network-only SSRF checks
-- redirect revalidation
-- content-type and body-size limits
+### Address lookup
+The prototype uses the public OpenStreetMap Nominatim service for user-triggered address lookup only. Results are cached in-process, requests are serialized/rate-limited, the application sends an identifying User-Agent, and the provider URL is configurable with `GEOCODING_BASE_URL`.
 
-Current ranking:
-- real geographic distance for proximity
-- category-based cold-start priors for scale/event/need signals
-- public website/phone availability for contactability
-- curated demo prospects preserve evidence-conditioned human review
+For production/commercial scale, switch to a commercial geocoding provider or a self-hosted instance rather than depending on the public service.
 
-## Run it
+### Persistence
+Flyway manages:
+- `campaigns`
+- `discovery_runs`
+- `discovered_prospects`
 
-### Docker + PostgreSQL
+Docker uses PostgreSQL 17. Local/test mode uses H2 in PostgreSQL compatibility mode.
+
+## Run locally
+
+Requires Java 21 and Maven.
+
+```bash
+mvn test
+mvn spring-boot:run
+```
+
+Open:
+
+```text
+http://localhost:8000
+```
+
+Docker + PostgreSQL is also supported:
 
 ```bash
 docker compose up --build
 ```
 
-Open http://localhost:8000.
+## API
 
-### Local Java
+### Geocode a restaurant address
 
-Java 21 and Maven 3.6.3+:
-
-```bash
-mvn spring-boot:run
+```http
+GET /api/geocode?address=123%20Main%20St%2C%20San%20Francisco%2C%20CA
 ```
 
-Local mode uses an in-memory H2 database in PostgreSQL compatibility mode so a reviewer does not need infrastructure.
-
-Run tests:
-
-```bash
-mvn test
-```
-
-## Campaign API
-
-Create a campaign:
+### Create a restaurant campaign
 
 ```http
 POST /api/campaigns
@@ -81,104 +115,70 @@ Content-Type: application/json
 
 ```json
 {
-  "name": "Peninsula Catering",
-  "business_type": "restaurant_catering",
-  "latitude": 37.4914,
-  "longitude": -122.2280,
-  "radius_meters": 8000
+  "name": "Harbor Pizza",
+  "business_type": "pizza",
+  "address": "123 Main St, San Francisco, CA",
+  "latitude": 37.7749,
+  "longitude": -122.4194,
+  "radius_meters": 8047
 }
 ```
 
-Start a durable discovery run:
+### Start discovery
 
 ```http
 POST /api/campaigns/{campaignId}/runs
 ```
 
-The API responds immediately with a run in `QUEUED` state. Processing continues asynchronously through:
+Run states:
 
 ```text
 QUEUED -> DISCOVERING -> COMPLETED | FAILED
 ```
 
-Inspect status and persisted results:
+Inspect results:
 
 ```http
 GET /api/runs/{runId}
 GET /api/runs/{runId}/prospects
 ```
 
-## Legacy / curated evidence demo API
+## Legacy evidence demo
 
-- `GET /api/prospects`
-- `GET /api/prospects/{id}`
-- `POST /api/discover`
-- `POST /api/prospects/{id}/outreach?useLlm=true`
-- `GET /health`
+The original hand-reviewed Redwood City prospect dataset remains available through `GET /api/prospects` as offline evidence-model seed material. It is **not** the default frontend or the product's restaurant identity.
 
-The original 12 hand-reviewed catering prospects remain as seed/demo material because they demonstrate a higher-confidence evidence model than raw discovery alone.
+The legacy direct discovery endpoint `POST /api/discover` now requires explicit latitude, longitude, and radius; it no longer silently defaults to one city.
 
-## Why the scoring changed
+## Scoring today
 
-The take-home's original cold-start score was category-driven. That meant the “proximity” component did not actually depend on distance.
+Cold-start score (100 points):
+- proximity: 25
+- organization scale: 20
+- event / meeting signal: 25
+- likely group-food need: 20
+- public contactability: 10
 
-v0.2 fixes this:
-
-- proximity is calculated from actual distance
-- contactability is derived from public contact paths
-- the remaining cold-start dimensions use category priors until evidence extraction is automated
-
-This makes the score more honest and gives the next iteration a clear path: replace priors with extracted, source-backed evidence.
-
-## Persistence
-
-Flyway manages:
-- `campaigns`
-- `discovery_runs`
-- `discovered_prospects`
-
-Docker uses PostgreSQL 17. Local/test mode uses H2 PostgreSQL compatibility mode for zero-config reviewability.
-
-## Source abstraction
-
-`ProspectSource` is the extension point for discovery providers. OpenStreetMap is only the first adapter.
-
-Potential future adapters:
-- uploaded CSV / CRM account lists
-- business directories
-- customer-provided first-party sources
-- licensed commercial enrichment providers
-
-## Safety / data-quality principles
-
-- discovery candidates are not automatically treated as verified facts
-- factual claims should carry source-level provenance
-- no invented employees or contact details
-- LLM-generated outreach is grounded only in stored evidence
-- private/local network targets are rejected by the enrichment layer
-- redirect targets are revalidated
-- external content is bounded by type and size
-- cached evidence remains inspectable when external providers fail
+Proximity uses actual distance. Contactability uses available public website/phone fields. The other dimensions still use category priors until evidence extraction is automated.
 
 ## Next product milestones
 
-1. Structured evidence extraction from public pages.
-2. Source confidence + evidence freshness TTLs.
-3. Conflict quarantine and evidence diffing.
-4. Evidence-conditioned scoring rather than category priors.
-5. Salesperson outcome feedback (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`).
-6. CRM sync / CSV import.
-7. Multi-tenant organizations and authentication.
-8. Natural-language ICP -> structured campaign criteria.
-9. Per-source rate limits, retry/backoff, and observability.
-10. Measure whether evidence-backed ranking improves reply/meeting rates.
+1. Extract structured claims from prospect websites.
+2. Add evidence freshness, confidence, and conflict handling.
+3. Make scoring restaurant-type-aware (pizza vs breakfast vs full-service vs catering).
+4. Add menu/service constraints: minimum order, delivery radius, dayparts, lead time, dietary support.
+5. Add natural-language ICP controls.
+6. Add salesperson outcomes (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`) and learn from them.
+7. Add CRM / CSV import and export.
+8. Add multi-tenant organizations and authentication.
+9. Add production geocoding and licensed enrichment providers.
+10. Measure whether evidence-backed ranking improves reply and conversion rates.
 
 ## Positioning
 
-VerityScout is **not trying to be another giant contact database**.
+VerityScout is not trying to be another giant contact database.
 
 Its wedge is:
 
-> Explainable, source-auditable prospect intelligence for teams that care whether an AI recommendation can be verified.
+> **Explainable, location-aware prospect intelligence for restaurants that want more local B2B revenue.**
 
-That makes it useful both as a production-style backend portfolio project and as a business experiment that can be tested with a small number of real customers.
+The longer-term platform can generalize beyond restaurants by making the scoring profile, buying signals, and source adapters configurable by business vertical.
