@@ -1,8 +1,28 @@
 services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: verityscout
+      POSTGRES_USER: verityscout
+      POSTGRES_PASSWORD: verityscout
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U verityscout -d verityscout"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - verityscout_pgdata:/var/lib/postgresql/data
   app:
     build: .
-    ports:
-      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["8000:8000"]
     environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/verityscout
+      DATABASE_USER: verityscout
+      DATABASE_PASSWORD: verityscout
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6}
+volumes:
+  verityscout_pgdata:

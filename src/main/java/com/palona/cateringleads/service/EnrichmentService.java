@@ -3,19 +3,22 @@ package com.palona.cateringleads.service;
 import com.palona.cateringleads.model.PageSnapshot;
 import org.springframework.stereotype.Service;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 @Service
 public class EnrichmentService {
 
-    private static final String USER_AGENT = "palona-catering-lead-demo/1.0 (take-home project)";
-    private static final int MAX_HTML_CHARS = 500_000;
+    private static final String USER_AGENT = "verityscout/0.2 (evidence-backed prospect intelligence)";
+    private static final int MAX_HTML_BYTES = 500_000;
     private static final int MAX_TEXT_CHARS = 20_000;
+    private static final int MAX_REDIRECTS = 3;
 
     private static final Pattern SCRIPT = Pattern.compile("<script[\\s\\S]*?</script>", Pattern.CASE_INSENSITIVE);
     private static final Pattern STYLE = Pattern.compile("<style[\\s\\S]*?</style>", Pattern.CASE_INSENSITIVE);
@@ -24,45 +27,74 @@ public class EnrichmentService {
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL)
+            .followRedirects(HttpClient.Redirect.NEVER)
             .build();
 
-    /**
-     * Fetches a single direct public page with conservative time and size bounds.
-     * This is intentionally a verifier/enricher, not a general-purpose crawler.
-     */
     public PageSnapshot fetchPublicPage(String url) {
-        URI uri = URI.create(url);
-        if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))) {
-            throw new IllegalArgumentException("Only public HTTP(S) URLs are supported");
-        }
+        return fetch(validatePublicUri(URI.create(url)), MAX_REDIRECTS);
+    }
 
+    private PageSnapshot fetch(URI uri, int redirectsRemaining) {
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .timeout(Duration.ofSeconds(10))
                 .header("User-Agent", USER_AGENT)
                 .GET()
                 .build();
-
         try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() >= 300 && response.statusCode() < 400) {
+                if (redirectsRemaining == 0) throw new IllegalStateException("Too many redirects");
+                String location = response.headers().firstValue("location")
+                        .orElseThrow(() -> new IllegalStateException("Redirect without location"));
+                return fetch(validatePublicUri(uri.resolve(location)), redirectsRemaining - 1);
+            }
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IllegalStateException("Source returned HTTP " + response.statusCode());
             }
-            String body = response.body();
-            if (body.length() > MAX_HTML_CHARS) {
-                body = body.substring(0, MAX_HTML_CHARS);
+            String contentType = response.headers().firstValue("content-type")
+                    .orElse("text/plain").toLowerCase(Locale.ROOT);
+            if (!(contentType.contains("text/html") || contentType.contains("text/plain"))) {
+                throw new IllegalStateException("Unsupported source content type: " + contentType);
             }
-            String visibleText = visibleText(body);
-            if (visibleText.length() > MAX_TEXT_CHARS) {
-                visibleText = visibleText.substring(0, MAX_TEXT_CHARS);
+            if (response.body().length > MAX_HTML_BYTES) {
+                throw new IllegalStateException("Source body exceeds safe size limit");
             }
-            return new PageSnapshot(response.uri().toString(), response.statusCode(), visibleText);
+
+            String visibleText = visibleText(new String(response.body(), java.nio.charset.StandardCharsets.UTF_8));
+            if (visibleText.length() > MAX_TEXT_CHARS) visibleText = visibleText.substring(0, MAX_TEXT_CHARS);
+            return new PageSnapshot(uri.toString(), response.statusCode(), visibleText);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Public-page fetch was interrupted", exception);
+        } catch (RuntimeException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new IllegalStateException("Unable to fetch public page", exception);
         }
+    }
+
+    static URI validatePublicUri(URI uri) {
+        String scheme = uri.getScheme();
+        if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))) {
+            throw new IllegalArgumentException("Only public HTTP(S) URLs are supported");
+        }
+        if (uri.getHost() == null || uri.getHost().isBlank()) {
+            throw new IllegalArgumentException("URL must include a public host");
+        }
+        try {
+            for (InetAddress address : InetAddress.getAllByName(uri.getHost())) {
+                if (address.isAnyLocalAddress()
+                        || address.isLoopbackAddress()
+                        || address.isLinkLocalAddress()
+                        || address.isSiteLocalAddress()
+                        || address.isMulticastAddress()) {
+                    throw new IllegalArgumentException("Private or local network destinations are not allowed");
+                }
+            }
+        } catch (java.net.UnknownHostException exception) {
+            throw new IllegalArgumentException("Unable to resolve source host", exception);
+        }
+        return uri;
     }
 
     static String visibleText(String html) {
