@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 @Service
 public class EnrichmentService {
 
-    private static final String USER_AGENT = "verityscout/0.2 (evidence-backed prospect intelligence)";
+    private static final String USER_AGENT = "Gather/0.7 (restaurant prospect intelligence; https://github.com/KevinHaolinChen/verityscout)";
     private static final int MAX_HTML_BYTES = 500_000;
     private static final int MAX_TEXT_CHARS = 20_000;
     private static final int MAX_REDIRECTS = 3;
@@ -60,9 +60,10 @@ public class EnrichmentService {
                 throw new IllegalStateException("Source body exceeds safe size limit");
             }
 
-            String visibleText = visibleText(new String(response.body(), java.nio.charset.StandardCharsets.UTF_8));
+            String html = new String(response.body(), java.nio.charset.StandardCharsets.UTF_8);
+            String visibleText = visibleText(html);
             if (visibleText.length() > MAX_TEXT_CHARS) visibleText = visibleText.substring(0, MAX_TEXT_CHARS);
-            return new PageSnapshot(uri.toString(), response.statusCode(), visibleText);
+            return new PageSnapshot(uri.toString(), response.statusCode(), visibleText, html);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Public-page fetch was interrupted", exception);
