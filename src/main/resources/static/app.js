@@ -123,7 +123,6 @@ function selectRestaurant(index) {
   selectedRestaurantAddress.textContent = match.address;
   selectedRestaurant.hidden = false;
   restaurantSearchResults.hidden = true;
-  document.getElementById('restaurantType').value = inferRestaurantType(match);
   setStatus(`Selected ${match.name}. Choose a radius and run discovery.`, 'success');
 }
 
@@ -273,7 +272,7 @@ async function handleCampaignSubmit(event) {
     return;
   }
 
-  const restaurantType = document.getElementById('restaurantType').value;
+  const restaurantType = inferRestaurantType(restaurant);
   const radiusMeters = Number(document.getElementById('radius').value);
 
   runButton.disabled = true;
