@@ -1,6 +1,7 @@
 package com.palona.cateringleads.service;
 
 import com.palona.cateringleads.model.ScoreBreakdown;
+import com.palona.cateringleads.persistence.CampaignEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
