@@ -60,7 +60,7 @@ public class OutreachService {
                 .toList();
 
         String prompt = """
-                Write a concise B2B catering outreach email body (70-110 words) from IHOP Redwood City.
+                Write a concise B2B catering outreach email body (70-110 words) from a nearby restaurant offering group orders or catering.
                 Use ONLY the evidence below. Do not invent names, employee counts, events, budgets, or needs.
                 If evidence is weak, phrase the offer conditionally. No hype.
 
