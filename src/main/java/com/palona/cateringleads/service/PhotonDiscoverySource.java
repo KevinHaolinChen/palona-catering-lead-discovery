@@ -50,7 +50,7 @@ public class PhotonDiscoverySource implements ProspectSource {
 
     @Override
     public List<DiscoveryCandidate> discover(SearchCriteria criteria) {
-        double radiusKm = Math.min(20.0, Math.max(1.0, criteria.radiusMeters() / 1000.0));
+        double radiusKm = Math.min(80.5, Math.max(0.1, criteria.radiusMeters() / 1000.0));
 
         List<QuerySpec> queries = List.of(
                 new QuerySpec("corporate_office", "office"),
