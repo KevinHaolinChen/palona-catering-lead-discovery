@@ -71,15 +71,14 @@
           <form id="restaurantSearchForm" class="restaurant-search-form">
             <label class="field">
               <span>Restaurant or franchise</span>
-              <div class="search-row">
-                <input id="restaurantSearch" type="search" placeholder="Try “Chipotle San Francisco”" autocomplete="off" required />
-                <button id="searchButton" class="secondary-button" type="submit">Search</button>
+              <div class="autocomplete-wrap">
+                <input id="restaurantSearch" type="search" placeholder="Start typing “Chipotle”, “IHOP”, “Tony’s”…" autocomplete="off" required />
+                <span id="locationIndicator" class="location-indicator">Requesting location…</span>
+                <div id="restaurantSearchResults" class="location-results autocomplete-menu" hidden></div>
               </div>
-              <small>Search by franchise, restaurant name, city, or neighborhood.</small>
+              <small>Suggestions appear as you type and are biased toward your live location when permission is enabled.</small>
             </label>
           </form>
-
-          <div id="restaurantSearchResults" class="location-results" hidden></div>
 
           <div id="selectedRestaurant" class="selected-restaurant" hidden>
             <span class="selected-kicker">SELECTED LOCATION</span>
@@ -111,8 +110,8 @@
           </div>
 
           <p class="attribution">
-            Prototype location search uses OpenStreetMap Nominatim on explicit Search actions only.
-            Discovery uses multiple OpenStreetMap Overpass providers with failover.
+            Restaurant autocomplete uses Photon with optional browser location bias. Prospect discovery uses Photon first,
+            with OpenStreetMap Overpass as a secondary source when needed.
           </p>
         </aside>
 
@@ -165,7 +164,7 @@
     </main>
 
     <footer>
-      <span>VerityScout AI v0.4</span>
+      <span>VerityScout AI v0.5</span>
       <span>Explainable local prospect intelligence</span>
     </footer>
   </div>
