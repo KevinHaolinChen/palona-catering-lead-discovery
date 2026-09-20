@@ -1,0 +1,1 @@
+-- Gather v0.8 campaign profile persistence
