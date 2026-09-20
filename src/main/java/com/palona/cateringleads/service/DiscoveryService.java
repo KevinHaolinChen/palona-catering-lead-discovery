@@ -64,6 +64,10 @@ public class DiscoveryService implements ProspectSource {
     }
 
     public List<DiscoveryCandidate> discover(double latitude, double longitude, int radiusMeters) {
+        // Overpass is only a supplemental source. Cap its geographic query so a wide
+        // 50-mile user search cannot turn into an expensive public-server query.
+        int overpassRadiusMeters = Math.max(1, Math.min(radiusMeters, 20_000));
+
         String query = """
                 [out:json][timeout:18];
                 (
@@ -71,7 +75,7 @@ public class DiscoveryService implements ProspectSource {
                   nwr(around:%d,%f,%f)[name][amenity~"hospital|clinic|university|college|school|conference_centre|community_centre"];
                 );
                 out center tags qt;
-                """.formatted(radiusMeters, latitude, longitude, radiusMeters, latitude, longitude);
+                """.formatted(overpassRadiusMeters, latitude, longitude, overpassRadiusMeters, latitude, longitude);
 
         List<String> failures = new ArrayList<>();
         for (URI endpoint : overpassUrls) {
