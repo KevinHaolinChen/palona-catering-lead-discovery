@@ -35,6 +35,12 @@ public class CampaignService {
                 request.latitude(),
                 request.longitude(),
                 request.radiusMeters(),
+                request.supportsCatering() == null || request.supportsCatering(),
+                valueOrDefault(request.primaryDaypart(), inferDaypart(request.businessType())),
+                valueOrDefault(request.priceTier(), "mid"),
+                request.deliveryRadiusMiles() == null
+                        ? Math.max(1, Math.min(10, (int) Math.round(request.radiusMeters() / 1609.344)))
+                        : request.deliveryRadiusMiles(),
                 Instant.now()
         );
         return toResponse(campaignRepository.save(entity));
@@ -69,6 +75,19 @@ public class CampaignService {
                 c.getRadiusMeters(),
                 c.getCreatedAt()
         );
+    }
+
+    private static String valueOrDefault(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value.trim();
+    }
+
+    private static String inferDaypart(String businessType) {
+        String type = businessType == null ? "" : businessType.trim().toLowerCase();
+        return switch (type) {
+            case "breakfast_brunch", "cafe_bakery" -> "breakfast_lunch";
+            case "pizza", "fast_casual" -> "lunch_dinner";
+            default -> "all_day";
+        };
     }
 
     static DiscoveryRunResponse toResponse(DiscoveryRunEntity r) {
