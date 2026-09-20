@@ -88,15 +88,20 @@
           </div>
 
           <form id="campaignForm">
-            <label class="field">
-              <span>Search radius</span>
-              <select id="radius">
-                <option value="4828">3 miles</option>
-                <option value="8047" selected>5 miles</option>
-                <option value="12875">8 miles</option>
-                <option value="16093">10 miles</option>
-                <option value="19312">12 miles</option>
-              </select>
+            <label class="field radius-field">
+              <span class="radius-label">
+                <span>Search radius</span>
+                <strong id="radiusValue">5 mi</strong>
+              </span>
+              <input id="radius" class="radius-slider" type="range" min="0" max="50" step="1" value="5" />
+              <div class="radius-scale" aria-hidden="true">
+                <span>0</span>
+                <span>10</span>
+                <span>20</span>
+                <span>30</span>
+                <span>40</span>
+                <span>50+</span>
+              </div>
             </label>
 
             <button id="runButton" class="primary-button" type="submit">
