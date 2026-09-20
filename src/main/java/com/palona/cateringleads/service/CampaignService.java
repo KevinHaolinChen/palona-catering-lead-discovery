@@ -27,8 +27,16 @@ public class CampaignService {
 
     @Transactional
     public CampaignResponse create(CampaignCreateRequest request) {
-        CampaignEntity entity = new CampaignEntity(UUID.randomUUID().toString(), request.name().trim(),
-                request.businessType().trim(), request.latitude(), request.longitude(), request.radiusMeters(), Instant.now());
+        CampaignEntity entity = new CampaignEntity(
+                UUID.randomUUID().toString(),
+                request.name().trim(),
+                request.businessType().trim(),
+                request.address().trim(),
+                request.latitude(),
+                request.longitude(),
+                request.radiusMeters(),
+                Instant.now()
+        );
         return toResponse(campaignRepository.save(entity));
     }
 
@@ -51,8 +59,16 @@ public class CampaignService {
     }
 
     private static CampaignResponse toResponse(CampaignEntity c) {
-        return new CampaignResponse(c.getId(), c.getName(), c.getBusinessType(), c.getLatitude(),
-                c.getLongitude(), c.getRadiusMeters(), c.getCreatedAt());
+        return new CampaignResponse(
+                c.getId(),
+                c.getName(),
+                c.getBusinessType(),
+                c.getOriginAddress(),
+                c.getLatitude(),
+                c.getLongitude(),
+                c.getRadiusMeters(),
+                c.getCreatedAt()
+        );
     }
 
     static DiscoveryRunResponse toResponse(DiscoveryRunEntity r) {
