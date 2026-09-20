@@ -1064,3 +1064,58 @@ footer {
   color: var(--danger);
   border-color: rgba(255, 122, 138, .22);
 }
+
+
+/* Native hidden must beat component display rules such as .empty-state { display:grid }. */
+[hidden] {
+  display: none !important;
+}
+
+.radius-field {
+  gap: 10px;
+}
+
+.radius-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.radius-label strong {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.radius-slider {
+  width: 100%;
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.radius-slider:focus {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.radius-scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-2);
+  font-size: 8px;
+  line-height: 1;
+}
+
+.radius-scale span:last-child {
+  color: var(--brand);
+  font-weight: 800;
+}
