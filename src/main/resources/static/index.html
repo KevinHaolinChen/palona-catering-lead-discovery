@@ -3,37 +3,187 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VerityScout · Evidence-backed prospect intelligence</title>
+  <meta name="description" content="VerityScout finds and ranks nearby B2B prospects for restaurant catering and group-order growth." />
+  <title>VerityScout · Restaurant prospect intelligence</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main>
-    <header class="hero">
-      <div>
-        <div class="eyebrow">VERITYSCOUT · EVIDENCE-BACKED PROSPECT INTELLIGENCE</div>
-        <h1>Know why a prospect is worth contacting.</h1>
-        <p>Discover organizations, preserve source-level evidence, rank them transparently, and generate grounded outreach without inventing facts.</p>
-      </div>
-      <div class="hero-card">
-        <span>Demo vertical</span>
-        <strong>Catering · Redwood City</strong>
-        <small>The engine is being generalized into campaign-based B2B prospecting.</small>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="VerityScout home">
+        <span class="brand-mark">V</span>
+        <span>
+          <strong>VerityScout</strong>
+          <small>Restaurant growth intelligence</small>
+        </span>
+      </a>
+      <div class="topbar-meta">
+        <span class="status-dot"></span>
+        Evidence-backed discovery
       </div>
     </header>
-    <section class="toolbar">
-      <div>
-        <label for="minScore">Minimum score <strong id="scoreValue">0</strong></label>
-        <input id="minScore" type="range" min="0" max="100" value="0" />
-      </div>
-      <div class="legend">
-        <span class="badge fact">FACT</span>
-        <span class="badge inference">INFERENCE</span>
-        <span class="badge ai">AI / GENERATED</span>
-      </div>
-    </section>
-    <section id="summary" class="summary"></section>
-    <section id="prospects" class="grid" aria-live="polite"></section>
-  </main>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">LOCAL B2B PROSPECTING FOR RESTAURANTS</div>
+          <h1>Turn your neighborhood into a qualified lead list.</h1>
+          <p>
+            Give VerityScout a restaurant and search radius. It finds nearby organizations,
+            ranks them by likely group-order fit, and keeps the source behind every discovered account.
+          </p>
+          <div class="hero-points">
+            <span>Location-aware</span>
+            <span>Explainable scoring</span>
+            <span>Source-linked</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="signal-card signal-card-primary">
+            <span class="signal-label">Prospect signal</span>
+            <strong>92</strong>
+            <small>High-fit nearby account</small>
+          </div>
+          <div class="signal-card signal-card-secondary">
+            <span class="mini-dot"></span>
+            <div>
+              <strong>Verified source</strong>
+              <small>OpenStreetMap · 1.8 mi</small>
+            </div>
+          </div>
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="setup-panel">
+          <div class="section-heading">
+            <span class="step">01</span>
+            <div>
+              <h2>Restaurant profile</h2>
+              <p>Set the origin for this prospecting run.</p>
+            </div>
+          </div>
+
+          <form id="campaignForm">
+            <label class="field">
+              <span>Restaurant name</span>
+              <input id="restaurantName" name="restaurantName" type="text" placeholder="e.g. Harbor Pizza" autocomplete="organization" required />
+            </label>
+
+            <label class="field">
+              <span>Restaurant type</span>
+              <select id="restaurantType" name="restaurantType" required>
+                <option value="restaurant_catering">Catering-focused</option>
+                <option value="breakfast_brunch">Breakfast / brunch</option>
+                <option value="pizza">Pizza</option>
+                <option value="fast_casual">Fast casual</option>
+                <option value="cafe_bakery">Cafe / bakery</option>
+                <option value="full_service">Full service</option>
+                <option value="other_restaurant">Other restaurant</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Street address</span>
+              <input id="restaurantAddress" name="restaurantAddress" type="text" placeholder="123 Main St, San Francisco, CA" autocomplete="street-address" required />
+              <small>Used once to locate the restaurant before discovery.</small>
+            </label>
+
+            <label class="field">
+              <span>Search radius</span>
+              <select id="radius" name="radius">
+                <option value="4828">3 miles</option>
+                <option value="8047" selected>5 miles</option>
+                <option value="12875">8 miles</option>
+                <option value="16093">10 miles</option>
+                <option value="19312">12 miles</option>
+              </select>
+            </label>
+
+            <button id="runButton" class="primary-button" type="submit">
+              <span>Find prospects</span>
+              <span class="button-arrow">→</span>
+            </button>
+          </form>
+
+          <div id="formStatus" class="form-status" role="status" aria-live="polite">
+            Ready for a restaurant.
+          </div>
+
+          <p class="attribution">
+            Address lookup uses OpenStreetMap Nominatim for this prototype. Discovery uses OpenStreetMap/Overpass.
+          </p>
+        </aside>
+
+        <section class="results-panel">
+          <div class="results-heading">
+            <div>
+              <div class="eyebrow">DISCOVERY WORKSPACE</div>
+              <h2 id="resultsTitle">Your prospects will appear here.</h2>
+              <p id="resultsSubtitle">Start with a restaurant profile to build a location-specific lead list.</p>
+            </div>
+            <span id="runBadge" class="run-badge idle">IDLE</span>
+          </div>
+
+          <div id="metrics" class="metrics" hidden>
+            <div class="metric">
+              <span>Prospects</span>
+              <strong id="metricCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>Score 70+</span>
+              <strong id="metricQualified">0</strong>
+            </div>
+            <div class="metric">
+              <span>Avg. score</span>
+              <strong id="metricAverage">0</strong>
+            </div>
+            <div class="metric">
+              <span>Nearest</span>
+              <strong id="metricNearest">—</strong>
+            </div>
+          </div>
+
+          <div id="resultControls" class="result-controls" hidden>
+            <label>
+              <span>Minimum score <strong id="scoreValue">0</strong></span>
+              <input id="minScore" type="range" min="0" max="100" value="0" />
+            </label>
+            <label class="sort-field">
+              <span>Sort</span>
+              <select id="sortBy">
+                <option value="score">Best score</option>
+                <option value="distance">Nearest</option>
+                <option value="name">Organization</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <div class="empty-icon">
+              <span></span><span></span><span></span>
+            </div>
+            <h3>No hard-coded restaurant. No fixed city.</h3>
+            <p>
+              VerityScout now builds each run from the restaurant you enter, so the same workflow
+              can be reused for a neighborhood cafe, pizza shop, breakfast concept, or catering operation.
+            </p>
+          </div>
+
+          <div id="prospects" class="prospect-list" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer>
+      <span>VerityScout v0.3</span>
+      <span>Explainable local prospect intelligence</span>
+    </footer>
+  </div>
+
   <script src="/app.js"></script>
 </body>
 </html>
