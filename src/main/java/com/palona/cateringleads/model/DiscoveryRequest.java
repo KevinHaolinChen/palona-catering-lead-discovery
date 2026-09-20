@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 public record DiscoveryRequest(
         @NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double latitude,
         @NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude,
-        @NotNull @Min(500) @Max(20_000) Integer radiusMeters
+        @NotNull @Min(0) @Max(80_500) Integer radiusMeters
 ) {
     public double resolvedLatitude() { return latitude; }
     public double resolvedLongitude() { return longitude; }
