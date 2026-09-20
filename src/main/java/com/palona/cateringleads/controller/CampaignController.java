@@ -43,8 +43,12 @@ public class CampaignController {
     }
 
     @GetMapping("/restaurants/search")
-    public List<RestaurantSearchResult> restaurantSearch(@RequestParam("q") String query) {
-        return geocodingService.searchRestaurants(query);
+    public List<RestaurantSearchResult> restaurantSearch(
+            @RequestParam("q") String query,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon
+    ) {
+        return geocodingService.searchRestaurants(query, lat, lon);
     }
 
     @GetMapping("/geocode")
