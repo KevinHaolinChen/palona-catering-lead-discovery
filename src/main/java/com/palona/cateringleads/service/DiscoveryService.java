@@ -4,6 +4,7 @@ import com.palona.cateringleads.model.DiscoveryCandidate;
 import com.palona.cateringleads.model.ScoreBreakdown;
 import com.palona.cateringleads.model.SearchCriteria;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -23,6 +24,7 @@ import java.util.Locale;
 import java.util.Set;
 
 @Service
+@Order(2)
 public class DiscoveryService implements ProspectSource {
 
     private static final String USER_AGENT =
@@ -41,7 +43,7 @@ public class DiscoveryService implements ProspectSource {
         this.jsonMapper = jsonMapper;
         this.scoringService = scoringService;
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(4))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
         this.overpassUrls = List.of(configuredUrls.split(",")).stream()
@@ -94,7 +96,7 @@ public class DiscoveryService implements ProspectSource {
     private HttpResponse<String> execute(URI endpoint, String query) {
         String body = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
         HttpRequest request = HttpRequest.newBuilder(endpoint)
-                .timeout(Duration.ofSeconds(24))
+                .timeout(Duration.ofSeconds(5))
                 .header("User-Agent", USER_AGENT)
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
