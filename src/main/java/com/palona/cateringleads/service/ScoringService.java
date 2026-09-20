@@ -31,7 +31,9 @@ public class ScoringService {
                 signals[0],
                 signals[1],
                 signals[2],
-                contactabilityScore(hasWebsite, hasPhone)
+                contactabilityScore(hasWebsite, hasPhone),
+                0,
+                0
         );
     }
 
