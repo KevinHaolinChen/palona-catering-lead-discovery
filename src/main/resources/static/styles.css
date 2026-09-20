@@ -914,3 +914,52 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+.autocomplete-wrap {
+  position: relative;
+}
+
+.autocomplete-wrap input {
+  padding-right: 88px;
+}
+
+.location-indicator {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted-2);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+
+.location-indicator.active {
+  color: var(--brand);
+}
+
+.location-indicator.off {
+  color: var(--muted-2);
+}
+
+.autocomplete-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 7px);
+  left: 0;
+  right: 0;
+  margin-top: 0;
+  max-height: 330px;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .42);
+}
+
+.error-text {
+  color: var(--danger);
+}
+
+.restaurant-search-form {
+  position: relative;
+  z-index: 20;
+}
