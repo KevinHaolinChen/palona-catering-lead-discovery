@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,19 +52,18 @@ public class ProspectController {
     }
 
     @PostMapping("/api/discover")
-    public DiscoveryResponse discover(@Valid @RequestBody(required = false) DiscoveryRequest request) {
-        DiscoveryRequest resolved = request == null ? new DiscoveryRequest(null, null, null) : request;
+    public DiscoveryResponse discover(@Valid @RequestBody DiscoveryRequest request) {
         try {
             var candidates = discoveryService.discover(
-                    resolved.resolvedLatitude(),
-                    resolved.resolvedLongitude(),
-                    resolved.resolvedRadiusMeters()
+                    request.resolvedLatitude(),
+                    request.resolvedLongitude(),
+                    request.resolvedRadiusMeters()
             );
             return new DiscoveryResponse(candidates.size(), candidates);
         } catch (Exception exception) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
-                    "Live discovery source unavailable. Use the cached demo results.",
+                    "Live discovery source unavailable.",
                     exception
             );
         }
