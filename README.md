@@ -200,3 +200,5 @@ Its wedge is:
 > **Explainable, location-aware prospect intelligence for restaurants that want more local B2B revenue.**
 
 The longer-term platform can generalize beyond restaurants by making the scoring profile, buying signals, and source adapters configurable by business vertical.
+
+<!-- v0.8 work in progress -->
