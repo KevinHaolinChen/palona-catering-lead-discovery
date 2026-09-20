@@ -21,6 +21,8 @@ const scoreValue = document.getElementById('scoreValue');
 const sortBy = document.getElementById('sortBy');
 const radius = document.getElementById('radius');
 const radiusValue = document.getElementById('radiusValue');
+const aiStatusPill = document.getElementById('aiStatusPill');
+const aiStatusText = document.getElementById('aiStatusText');
 
 const state = {
   selectedRestaurant: null,
@@ -231,44 +233,6 @@ function parseScoreExplanation(value) {
     .join('');
 }
 
-function leadReasons(prospect) {
-  const parts = scoreParts(prospect.score_explanation);
-  const distance = Number(prospect.distance_miles);
-  const reasons = [];
-
-  if (distance <= 2) {
-    reasons.push(`Very close to your restaurant at ${distance.toFixed(1)} miles, which can make delivery and repeat orders easier.`);
-  } else if (distance <= 5) {
-    reasons.push(`Within a practical local delivery range at ${distance.toFixed(1)} miles.`);
-  } else {
-    reasons.push(`Inside your selected search radius at ${distance.toFixed(1)} miles.`);
-  }
-
-  const categoryReason = {
-    corporate_office: 'Corporate offices can create recurring group-food occasions such as team meetings, visitor days, and employee meals.',
-    corporate_hq: 'A headquarters can have recurring workplace, visitor, and meeting-related group-food demand.',
-    corporate_campus: 'A larger corporate campus can create multiple workplace and event-related group-order opportunities.',
-    university_campus: 'Campus departments can have meetings, trainings, student programs, and other group-food occasions.',
-    hospital: 'Hospitals have many departments and staff meetings, though outside-vendor rules can reduce conversion likelihood.',
-    community_event_space: 'Event and community spaces directly host group gatherings that can create catering demand.',
-  }[prospect.category];
-
-  if (categoryReason) reasons.push(categoryReason);
-  else reasons.push(`Its ${humanize(prospect.category).toLowerCase()} profile is a plausible local group-order prospect.`);
-
-  if ((parts.contact || 0) >= 7) {
-    reasons.push('A public website or phone path is available, making the account easier to contact and verify.');
-  } else {
-    reasons.push('Public contactability is limited, so this lead may require extra research before outreach.');
-  }
-
-  if ((parts.events || 0) >= 17 || (parts.need || 0) >= 17) {
-    reasons.push('The current cold-start model gives this category above-average meeting or group-food signals.');
-  }
-
-  return reasons;
-}
-
 function prospectCard(prospect) {
   const website = safeHttpUrl(prospect.website);
   const source = safeHttpUrl(prospect.source_url);
@@ -281,10 +245,6 @@ function prospectCard(prospect) {
     phoneHref ? `<a class="action-link" href="${escapeHtml(phoneHref)}">Call</a>` : '',
     source ? `<a class="action-link" href="${escapeHtml(source)}" target="_blank" rel="noreferrer">Evidence ↗</a>` : '',
   ].join('');
-
-  const reasons = leadReasons(prospect)
-    .map(reason => `<li>${escapeHtml(reason)}</li>`)
-    .join('');
 
   return `
     <article class="prospect-card" data-prospect-card="${escapeHtml(prospect.id)}">
@@ -301,14 +261,13 @@ function prospectCard(prospect) {
           ${phone ? `<span>${escapeHtml(phone)}</span>` : ''}
         </div>
         <div class="score-explanation">${parseScoreExplanation(prospect.score_explanation)}</div>
-        <details class="why-lead">
+        <details class="why-lead" data-insight-prospect="${escapeHtml(prospect.id)}">
           <summary>
-            <span>Why VerityScout AI chose this</span>
+            <span>Why Gather chose this</span>
             <span class="why-score">${escapeHtml(prospect.score)}/100</span>
           </summary>
-          <div class="why-body">
-            <p class="why-note">Signal-based rationale from the current explainable scoring model.</p>
-            <ul>${reasons}</ul>
+          <div class="why-body" data-insight-body="${escapeHtml(prospect.id)}">
+            <p class="why-note">Open this section to generate a grounded, prospect-specific analysis.</p>
           </div>
         </details>
         <div class="outreach-feedback" data-outreach-feedback="${escapeHtml(prospect.id)}" hidden></div>
@@ -415,7 +374,7 @@ async function handleCampaignSubmit(event) {
     });
 
     state.campaign = campaign;
-    resultsTitle.textContent = `AI-ranked prospects for ${campaign.name}`;
+    resultsTitle.textContent = `Radius prospects for ${campaign.name}`;
     resultsSubtitle.textContent =
       `${campaign.address} · ${(campaign.radius_meters / 1609.344).toFixed(0)}-mile search radius`;
 
@@ -434,7 +393,7 @@ async function handleCampaignSubmit(event) {
     setStatus(error.message || 'Something went wrong.', 'error');
   } finally {
     runButton.disabled = false;
-    runButton.querySelector('span:first-child').textContent = 'Find AI-ranked prospects';
+    runButton.querySelector('span:first-child').textContent = 'Find prospects';
   }
 }
 
@@ -481,7 +440,68 @@ sortBy.addEventListener('change', renderProspects);
 
 updateRadiusDisplay();
 requestLiveLocation();
+loadAiStatus();
 
+
+
+async function loadAiStatus() {
+  try {
+    const status = await request('/api/ai/status');
+    if (status.enabled) {
+      aiStatusPill.textContent = 'AI ON';
+      aiStatusPill.classList.remove('off');
+      aiStatusText.textContent = `Generated analysis · ${status.model}`;
+    } else {
+      aiStatusPill.textContent = 'AI OFF';
+      aiStatusPill.classList.add('off');
+      aiStatusText.textContent = 'Heuristic fallback · add API key';
+    }
+  } catch {
+    aiStatusPill.textContent = 'AI ?';
+    aiStatusPill.classList.add('off');
+    aiStatusText.textContent = 'AI status unavailable';
+  }
+}
+
+async function loadProspectInsight(details) {
+  if (!details || details.dataset.loaded === 'true' || details.dataset.loading === 'true') return;
+
+  const prospectId = details.dataset.insightProspect;
+  const body = details.querySelector('[data-insight-body]');
+  if (!prospectId || !body) return;
+
+  details.dataset.loading = 'true';
+  body.innerHTML = '<p class="why-note">Gather is analyzing this prospect against the available evidence…</p>';
+
+  try {
+    const insight = await request(
+      `/api/discovered-prospects/${encodeURIComponent(prospectId)}/insight`,
+      { method: 'POST' }
+    );
+
+    const generatorLabel = insight.generative_ai
+      ? `Generated with ${escapeHtml(insight.generator)}`
+      : 'Heuristic fallback';
+
+    const reasons = (insight.reasons || [])
+      .map(reason => `<li>${escapeHtml(reason)}</li>`)
+      .join('');
+
+    body.innerHTML = `
+      <div class="insight-meta">
+        <span class="insight-generator ${insight.generative_ai ? 'active' : 'fallback'}">${generatorLabel}</span>
+      </div>
+      <ul>${reasons}</ul>
+      <p class="why-note">${escapeHtml(insight.evidence_note || '')}</p>
+    `;
+
+    details.dataset.loaded = 'true';
+  } catch (error) {
+    body.innerHTML = `<p class="why-note error-text">${escapeHtml(error.message || 'Unable to generate prospect analysis.')}</p>`;
+  } finally {
+    details.dataset.loading = 'false';
+  }
+}
 
 async function copyText(value) {
   if (!navigator.clipboard) return false;
@@ -494,6 +514,15 @@ async function copyText(value) {
 }
 
 prospectList.addEventListener('click', async event => {
+  const summary = event.target.closest('details[data-insight-prospect] > summary');
+  if (summary) {
+    const details = summary.parentElement;
+    setTimeout(() => {
+      if (details.open) loadProspectInsight(details);
+    }, 0);
+    return;
+  }
+
   const button = event.target.closest('[data-email-prospect]');
   if (!button) return;
 
@@ -506,7 +535,7 @@ prospectList.addEventListener('click', async event => {
   if (feedback) {
     feedback.hidden = false;
     feedback.className = 'outreach-feedback';
-    feedback.textContent = 'Checking the organization’s public website for a contact email…';
+    feedback.textContent = 'Checking source tags, the official site, and contact pages for a public email…';
   }
 
   try {
@@ -522,8 +551,11 @@ prospectList.addEventListener('click', async event => {
 
       if (feedback) {
         feedback.className = 'outreach-feedback success';
+        const draftLabel = outreach.generative_ai
+          ? `AI-personalized with ${escapeHtml(outreach.generator)}`
+          : 'heuristic draft';
         feedback.innerHTML =
-          `Found <strong>${escapeHtml(outreach.email)}</strong> from a public source. Opening your email app…`;
+          `Found <strong>${escapeHtml(outreach.email)}</strong> from a public source · ${draftLabel}. Opening your email app…`;
       }
       window.location.href = mailto.toString();
     } else {
