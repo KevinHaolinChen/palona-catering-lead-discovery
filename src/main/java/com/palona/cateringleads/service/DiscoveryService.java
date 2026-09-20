@@ -65,16 +65,30 @@ public class DiscoveryService implements ProspectSource {
                 .POST(HttpRequest.BodyPublishers.ofString(query))
                 .build();
 
+        HttpResponse<String> response = RetryExecutor.withBackoff(
+                3,
+                Duration.ofMillis(300),
+                () -> execute(request)
+        );
+
+        try {
+            return parseCandidates(jsonMapper.readTree(response.body()), latitude, longitude);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Unable to parse live discovery response", exception);
+        }
+    }
+
+    private HttpResponse<String> execute(HttpRequest request) {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IllegalStateException("Overpass returned HTTP " + response.statusCode());
             }
-            return parseCandidates(jsonMapper.readTree(response.body()), latitude, longitude);
+            return response;
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Live discovery was interrupted", exception);
-        } catch (Exception exception) {
+        } catch (java.io.IOException exception) {
             throw new IllegalStateException("Live discovery source unavailable", exception);
         }
     }
