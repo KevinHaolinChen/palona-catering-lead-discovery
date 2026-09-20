@@ -742,3 +742,175 @@ footer {
     gap: 3px;
   }
 }
+
+
+.brand em {
+  margin-left: 3px;
+  color: var(--brand);
+  font-size: 10px;
+  font-style: normal;
+  letter-spacing: .08em;
+}
+
+.ai-pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 25px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 7px;
+  color: #071019;
+  background: linear-gradient(135deg, var(--brand), #b1ffdf);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+
+.restaurant-search-form {
+  margin-bottom: 0;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+.secondary-button {
+  min-width: 76px;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid rgba(113, 242, 194, .24);
+  border-radius: 11px;
+  color: var(--brand);
+  background: rgba(113, 242, 194, .07);
+  font-weight: 850;
+}
+
+.secondary-button:hover {
+  background: rgba(113, 242, 194, .11);
+}
+
+.secondary-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.location-results {
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: #0b1721;
+}
+
+.location-option {
+  width: 100%;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 20px;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+}
+
+.location-option:last-child { border-bottom: 0; }
+
+.location-option:hover {
+  background: rgba(113, 242, 194, .055);
+}
+
+.location-pin {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--brand);
+  background: rgba(113, 242, 194, .07);
+}
+
+.location-copy {
+  min-width: 0;
+}
+
+.location-copy strong,
+.location-copy small {
+  display: block;
+}
+
+.location-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.location-copy small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.location-arrow {
+  color: var(--muted-2);
+}
+
+.location-empty {
+  padding: 15px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.selected-restaurant {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid rgba(113, 242, 194, .20);
+  border-radius: 13px;
+  background: rgba(113, 242, 194, .045);
+}
+
+.selected-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--brand);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+
+.selected-restaurant strong {
+  display: block;
+  font-size: 13px;
+}
+
+.selected-restaurant p {
+  margin: 5px 0 8px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  color: #b9c9d7;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 420px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+}
