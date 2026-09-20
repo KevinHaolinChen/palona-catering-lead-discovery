@@ -1,185 +1,184 @@
-# Palona Engineering Take-Home — Catering Lead Discovery (Java / Spring Boot)
+# VerityScout — Evidence-backed B2B Prospect Intelligence
 
-A small evidence-first application that helps **IHOP Redwood City (491 Veterans Blvd, Redwood City, CA 94063)** discover and prioritize nearby organizations that may purchase catering.
+VerityScout is a Java/Spring Boot backend for discovering and prioritizing B2B prospects **without hiding why a lead was recommended**.
 
-This version is implemented in **Java 21 + Spring Boot 4.1 + Maven**. The product behavior is intentionally the same as the original prototype: a reviewer can inspect ranked leads, sourced facts, explicit inferences, public contact paths, uncertainty, and grounded outreach.
+It began as a Palona engineering take-home for IHOP Redwood City catering leads. v0.2 productizes the reusable idea underneath that assignment: campaign-based prospect discovery with source provenance, explainable scoring, persistent run history, bounded enrichment, and grounded outreach.
 
-## Why this architecture
+## Product thesis
 
-The application is best understood as an evidence pipeline:
+Most prospecting tools optimize for breadth: more contacts, more enrichment, more sequences.
+
+VerityScout focuses on an adjacent problem:
+
+> **Can a seller audit exactly why this account is worth contacting, which source supports each claim, how fresh/conflicted that evidence is, and how that evidence affected the score?**
+
+That makes the core object an evidence-backed recommendation rather than a row in a contact database.
+
+## Architecture
 
 ```text
-candidate discovery
-    -> direct-source verification / enrichment
-    -> claim-level evidence
-    -> explainable ranking
-    -> public contact path
-    -> grounded outreach
+Campaign
+  -> Discovery Run
+  -> Prospect Sources
+  -> Canonicalization / dedupe
+  -> Persisted candidates
+  -> Enrichment
+  -> Claim-level evidence
+  -> Explainable scoring
+  -> Grounded outreach
+  -> Outcome feedback (next)
 ```
 
-Discovery is allowed to be noisy. Claims shown to a salesperson should be traceable and uncertainty-aware.
+Current source adapter:
+- OpenStreetMap / Overpass for high-recall geographic discovery
+
+Current enrichment:
+- bounded direct public-page retrieval
+- public-network-only SSRF checks
+- redirect revalidation
+- content-type and body-size limits
+
+Current ranking:
+- real geographic distance for proximity
+- category-based cold-start priors for scale/event/need signals
+- public website/phone availability for contactability
+- curated demo prospects preserve evidence-conditioned human review
 
 ## Run it
 
-### Option A — Docker (one command)
+### Docker + PostgreSQL
 
 ```bash
 docker compose up --build
 ```
 
-Open `http://localhost:8000`.
+Open http://localhost:8000.
 
-### Option B — local Java
+### Local Java
 
-Requirements: Java 21 and Maven 3.6.3+.
+Java 21 and Maven 3.6.3+:
 
 ```bash
 mvn spring-boot:run
 ```
 
-Open `http://localhost:8000`.
+Local mode uses an in-memory H2 database in PostgreSQL compatibility mode so a reviewer does not need infrastructure.
 
-Run tests with:
+Run tests:
 
 ```bash
 mvn test
 ```
 
-## Main API
+## Campaign API
 
-- `GET /api/prospects` — returns the saved, reviewable prospect set.
-- `GET /api/prospects/{id}` — returns one prospect with evidence, score, contact path, outreach, and uncertainties.
-- `POST /api/discover` — queries OpenStreetMap/Overpass for nearby candidate organizations and applies the deterministic cold-start score.
-- `POST /api/prospects/{id}/outreach?useLlm=true` — optionally regenerates a grounded outreach draft when `OPENAI_API_KEY` is set.
-- `GET /health` — confirms the app is alive and cached prospect data loaded successfully.
+Create a campaign:
 
-Example discovery request:
+```http
+POST /api/campaigns
+Content-Type: application/json
+```
 
 ```json
 {
+  "name": "Peninsula Catering",
+  "business_type": "restaurant_catering",
   "latitude": 37.4914,
   "longitude": -122.2280,
   "radius_meters": 8000
 }
 ```
 
-## Java repository tour
+Start a durable discovery run:
 
-```text
-src/main/java/com/palona/cateringleads/
-  CateringLeadApplication.java
-  controller/
-    ProspectController.java      HTTP API / orchestration boundary
-  model/
-    Prospect.java                lead aggregate
-    Evidence.java                claim-level provenance
-    ContactPath.java             public contact route
-    ScoreBreakdown.java          explainable score dimensions
-    Discovery*.java              live discovery DTOs
-  service/
-    ProspectService.java         cached dataset load + fail-fast invariants
-    DiscoveryService.java        OpenStreetMap / Overpass candidate discovery
-    EnrichmentService.java       bounded direct-public-page fetcher
-    ScoringService.java          deterministic cold-start ranking
-    OutreachService.java         cached + optional grounded LLM generation
-
-src/main/resources/
-  data/example_prospects.json    12 hand-reviewed prospects
-  data/rejected_candidates.json stale/conflicting-source example
-  static/                        lightweight dashboard
+```http
+POST /api/campaigns/{campaignId}/runs
 ```
 
-## Key design decisions
+The API responds immediately with a run in `QUEUED` state. Processing continues asynchronously through:
 
-### 1. Claims, not organizations, own provenance
+```text
+QUEUED -> DISCOVERING -> COMPLETED | FAILED
+```
 
-Each `Evidence` item is typed as `fact`, `inference`, or `ai_generated`. A fact can point to the exact public source that supports it instead of giving one vague URL for the whole organization.
+Inspect status and persisted results:
 
-### 2. Fail fast on cached-data invariants
+```http
+GET /api/runs/{runId}
+GET /api/runs/{runId}/prospects
+```
 
-At startup, `ProspectService` validates the saved dataset with Bean Validation and business rules:
+## Legacy / curated evidence demo API
 
-- score components stay inside their ranges
-- total score equals the breakdown sum
-- every sourced fact has a source URL
+- `GET /api/prospects`
+- `GET /api/prospects/{id}`
+- `POST /api/discover`
+- `POST /api/prospects/{id}/outreach?useLlm=true`
+- `GET /health`
 
-This converts silent demo-data corruption into a startup failure that is easy to diagnose.
+The original 12 hand-reviewed catering prospects remain as seed/demo material because they demonstrate a higher-confidence evidence model than raw discovery alone.
 
-### 3. Explainable ranking over an opaque model
+## Why the scoring changed
 
-Scores have five dimensions totaling 100 points:
+The take-home's original cold-start score was category-driven. That meant the “proximity” component did not actually depend on distance.
 
-| Dimension | Max | Meaning |
-|---|---:|---|
-| Proximity | 25 | Delivery convenience / local relevance |
-| Organization scale | 20 | Potential for recurring group demand |
-| Event & meeting signal | 25 | Evidence of gatherings |
-| Food-need signal | 20 | Likelihood group meals are operationally useful |
-| Contactability | 10 | Whether a reasonable public route exists |
+v0.2 fixes this:
 
-The score is a prioritization heuristic, **not** a conversion probability.
+- proximity is calculated from actual distance
+- contactability is derived from public contact paths
+- the remaining cold-start dimensions use category priors until evidence extraction is automated
 
-### 4. Live discovery and verified enrichment are deliberately separate
+This makes the score more honest and gives the next iteration a clear path: replace priors with extracted, source-backed evidence.
 
-`POST /api/discover` demonstrates reusable geographic candidate generation. It does **not** claim that OpenStreetMap records are verified sales leads. The 12 cached prospects demonstrate the higher-confidence, hand-reviewed output with direct-source evidence.
+## Persistence
 
-With more time, the next major feature would be an orchestration layer that automatically sends discovered candidates through source enrichment, structured extraction, conflict resolution, and evidence-conditioned re-ranking.
+Flyway manages:
+- `campaigns`
+- `discovery_runs`
+- `discovered_prospects`
 
-### 5. Cached output makes the demo resilient
+Docker uses PostgreSQL 17. Local/test mode uses H2 PostgreSQL compatibility mode for zero-config reviewability.
 
-The reviewer can inspect the full workflow even if Overpass, a company webpage, or the optional LLM is unavailable during review.
+## Source abstraction
 
-### 6. Contact paths over fabricated people
+`ProspectSource` is the extension point for discovery providers. OpenStreetMap is only the first adapter.
 
-When a reliable named individual is unavailable, the system recommends a public role and channel such as workplace operations, events, facilities, an office phone, or a general email. It never invents an employee.
+Potential future adapters:
+- uploaded CSV / CRM account lists
+- business directories
+- customer-provided first-party sources
+- licensed commercial enrichment providers
 
-## OpenAI integration
+## Safety / data-quality principles
 
-The app works without OpenAI. If `OPENAI_API_KEY` is present, `OutreachService` calls the Responses API and gives the model only the prospect's stored facts, explicit inferences, and target role. The prompt explicitly forbids inventing names, employee counts, events, budgets, or needs.
+- discovery candidates are not automatically treated as verified facts
+- factual claims should carry source-level provenance
+- no invented employees or contact details
+- LLM-generated outreach is grounded only in stored evidence
+- private/local network targets are rejected by the enrichment layer
+- redirect targets are revalidated
+- external content is bounded by type and size
+- cached evidence remains inspectable when external providers fail
 
-## Data-quality example: DPR
+## Next product milestones
 
-`rejected_candidates.json` preserves a concrete stale-data case. An older DPR source suggested Redwood City, but newer official information identified Santa Clara as the current Silicon Valley location. The candidate is rejected rather than quietly kept as a lead.
+1. Structured evidence extraction from public pages.
+2. Source confidence + evidence freshness TTLs.
+3. Conflict quarantine and evidence diffing.
+4. Evidence-conditioned scoring rather than category priors.
+5. Salesperson outcome feedback (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`).
+6. CRM sync / CSV import.
+7. Multi-tenant organizations and authentication.
+8. Natural-language ICP -> structured campaign criteria.
+9. Per-source rate limits, retry/backoff, and observability.
+10. Measure whether evidence-backed ranking improves reply/meeting rates.
 
-This is useful in the interview because it demonstrates that source existence is not enough: freshness and conflict handling matter too.
+## Positioning
 
-## Testing philosophy
+VerityScout is **not trying to be another giant contact database**.
 
-The tests focus on business invariants rather than frontend cosmetics:
+Its wedge is:
 
-- at least 10 cached prospects exist
-- score totals match their breakdowns
-- every fact has provenance
-- contact paths do not depend on invented people
-- scoring stays bounded
-- event-oriented organizations outrank generic cold-start candidates
+> Explainable, source-auditable prospect intelligence for teams that care whether an AI recommendation can be verified.
 
-## Tradeoffs
-
-Optimized for:
-
-- traceability over scraping breadth
-- graceful uncertainty over confident fabrication
-- deterministic, explainable scoring over opaque ML
-- one-command reviewability over production infrastructure
-- direct public sources over noisy aggregators
-
-Intentionally not built:
-
-- CRM integration
-- email sending
-- authentication
-- production-scale crawling
-- complex cloud infrastructure
-- a polished design system
-
-## With more time
-
-1. Wire discovery -> enrichment -> structured extraction into one automated orchestration pipeline.
-2. Add domain/address canonicalization and fuzzy deduplication.
-3. Add source-specific adapters and explicit source confidence.
-4. Schedule source revalidation with TTLs and conflict quarantine.
-5. Derive ranking dimensions from extracted evidence rather than category defaults.
-6. Add salesperson feedback to tune ranking weights.
-7. Add an evidence-diff view for changed or stale claims.
-8. Add request-level rate limiting, retry/backoff, and stronger SSRF controls for enrichment.
+That makes it useful both as a production-style backend portfolio project and as a business experiment that can be tested with a small number of real customers.
