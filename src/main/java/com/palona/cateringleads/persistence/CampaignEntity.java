@@ -17,6 +17,8 @@ public class CampaignEntity {
     private int radiusMeters;
     private boolean supportsCatering;
     private String primaryDaypart;
+    private String priceTier;
+    private int deliveryRadiusMiles;
     private Instant createdAt;
 
     protected CampaignEntity() {}
@@ -29,6 +31,10 @@ public class CampaignEntity {
             double latitude,
             double longitude,
             int radiusMeters,
+            boolean supportsCatering,
+            String primaryDaypart,
+            String priceTier,
+            int deliveryRadiusMiles,
             Instant createdAt
     ) {
         this.id = id;
@@ -38,6 +44,10 @@ public class CampaignEntity {
         this.latitude = latitude;
         this.longitude = longitude;
         this.radiusMeters = radiusMeters;
+        this.supportsCatering = supportsCatering;
+        this.primaryDaypart = primaryDaypart;
+        this.priceTier = priceTier;
+        this.deliveryRadiusMiles = deliveryRadiusMiles;
         this.createdAt = createdAt;
     }
 
@@ -48,5 +58,9 @@ public class CampaignEntity {
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
     public int getRadiusMeters() { return radiusMeters; }
+    public boolean isSupportsCatering() { return supportsCatering; }
+    public String getPrimaryDaypart() { return primaryDaypart; }
+    public String getPriceTier() { return priceTier; }
+    public int getDeliveryRadiusMiles() { return deliveryRadiusMiles; }
     public Instant getCreatedAt() { return createdAt; }
 }
