@@ -4,6 +4,8 @@ public record ProspectOutreachResponse(
         String prospectId,
         String email,
         String emailSourceUrl,
+        String generator,
+        boolean generativeAi,
         String subject,
         String body,
         String note
