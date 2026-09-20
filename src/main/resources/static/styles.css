@@ -1119,3 +1119,40 @@ footer {
   color: var(--brand);
   font-weight: 800;
 }
+
+
+.ai-pill.off {
+  color: var(--muted);
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid var(--line-strong);
+}
+
+.insight-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 0 8px;
+}
+
+.insight-generator {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.insight-generator.active {
+  color: var(--brand);
+  background: rgba(113, 242, 194, .07);
+  border: 1px solid rgba(113, 242, 194, .18);
+}
+
+.insight-generator.fallback {
+  color: var(--warning);
+  background: rgba(244, 199, 107, .06);
+  border: 1px solid rgba(244, 199, 107, .18);
+}
