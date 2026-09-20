@@ -205,16 +205,61 @@ function scheduleRestaurantSearch() {
   searchTimer = setTimeout(runRestaurantSearch, 320);
 }
 
-function parseScoreExplanation(value) {
-  return String(value || '')
+function scoreParts(value) {
+  const parts = {};
+  String(value || '')
     .split(',')
     .map(part => part.trim())
     .filter(Boolean)
-    .map(part => {
-      const [key, score] = part.split('=');
-      return `<span>${escapeHtml(humanize(key))} ${escapeHtml(score)}</span>`;
-    })
+    .forEach(part => {
+      const [key, rawScore] = part.split('=');
+      parts[key] = Number(rawScore || 0);
+    });
+  return parts;
+}
+
+function parseScoreExplanation(value) {
+  return Object.entries(scoreParts(value))
+    .map(([key, score]) => `<span>${escapeHtml(humanize(key))} ${escapeHtml(score)}</span>`)
     .join('');
+}
+
+function leadReasons(prospect) {
+  const parts = scoreParts(prospect.score_explanation);
+  const distance = Number(prospect.distance_miles);
+  const reasons = [];
+
+  if (distance <= 2) {
+    reasons.push(`Very close to your restaurant at ${distance.toFixed(1)} miles, which can make delivery and repeat orders easier.`);
+  } else if (distance <= 5) {
+    reasons.push(`Within a practical local delivery range at ${distance.toFixed(1)} miles.`);
+  } else {
+    reasons.push(`Inside your selected search radius at ${distance.toFixed(1)} miles.`);
+  }
+
+  const categoryReason = {
+    corporate_office: 'Corporate offices can create recurring group-food occasions such as team meetings, visitor days, and employee meals.',
+    corporate_hq: 'A headquarters can have recurring workplace, visitor, and meeting-related group-food demand.',
+    corporate_campus: 'A larger corporate campus can create multiple workplace and event-related group-order opportunities.',
+    university_campus: 'Campus departments can have meetings, trainings, student programs, and other group-food occasions.',
+    hospital: 'Hospitals have many departments and staff meetings, though outside-vendor rules can reduce conversion likelihood.',
+    community_event_space: 'Event and community spaces directly host group gatherings that can create catering demand.',
+  }[prospect.category];
+
+  if (categoryReason) reasons.push(categoryReason);
+  else reasons.push(`Its ${humanize(prospect.category).toLowerCase()} profile is a plausible local group-order prospect.`);
+
+  if ((parts.contact || 0) >= 7) {
+    reasons.push('A public website or phone path is available, making the account easier to contact and verify.');
+  } else {
+    reasons.push('Public contactability is limited, so this lead may require extra research before outreach.');
+  }
+
+  if ((parts.events || 0) >= 17 || (parts.need || 0) >= 17) {
+    reasons.push('The current cold-start model gives this category above-average meeting or group-food signals.');
+  }
+
+  return reasons;
 }
 
 function prospectCard(prospect) {
@@ -224,13 +269,18 @@ function prospectCard(prospect) {
   const phoneHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null;
 
   const actions = [
+    `<button class="action-link email-action" type="button" data-email-prospect="${escapeHtml(prospect.id)}">Email lead</button>`,
     website ? `<a class="action-link" href="${escapeHtml(website)}" target="_blank" rel="noreferrer">Website ↗</a>` : '',
     phoneHref ? `<a class="action-link" href="${escapeHtml(phoneHref)}">Call</a>` : '',
     source ? `<a class="action-link" href="${escapeHtml(source)}" target="_blank" rel="noreferrer">Evidence ↗</a>` : '',
   ].join('');
 
+  const reasons = leadReasons(prospect)
+    .map(reason => `<li>${escapeHtml(reason)}</li>`)
+    .join('');
+
   return `
-    <article class="prospect-card">
+    <article class="prospect-card" data-prospect-card="${escapeHtml(prospect.id)}">
       <div class="score-ring"><div><strong>${prospect.score}</strong><span>/100</span></div></div>
       <div class="prospect-main">
         <div class="prospect-topline">
@@ -244,6 +294,17 @@ function prospectCard(prospect) {
           ${phone ? `<span>${escapeHtml(phone)}</span>` : ''}
         </div>
         <div class="score-explanation">${parseScoreExplanation(prospect.score_explanation)}</div>
+        <details class="why-lead">
+          <summary>
+            <span>Why VerityScout AI chose this</span>
+            <span class="why-score">${escapeHtml(prospect.score)}/100</span>
+          </summary>
+          <div class="why-body">
+            <p class="why-note">Signal-based rationale from the current explainable scoring model.</p>
+            <ul>${reasons}</ul>
+          </div>
+        </details>
+        <div class="outreach-feedback" data-outreach-feedback="${escapeHtml(prospect.id)}" hidden></div>
       </div>
       <div class="prospect-actions">${actions}</div>
     </article>
@@ -410,3 +471,67 @@ minScore.addEventListener('input', renderProspects);
 sortBy.addEventListener('change', renderProspects);
 
 requestLiveLocation();
+
+
+async function copyText(value) {
+  if (!navigator.clipboard) return false;
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+prospectList.addEventListener('click', async event => {
+  const button = event.target.closest('[data-email-prospect]');
+  if (!button) return;
+
+  const prospectId = button.dataset.emailProspect;
+  const feedback = prospectList.querySelector(`[data-outreach-feedback="${CSS.escape(prospectId)}"]`);
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = 'Finding email…';
+  if (feedback) {
+    feedback.hidden = false;
+    feedback.className = 'outreach-feedback';
+    feedback.textContent = 'Checking the organization’s public website for a contact email…';
+  }
+
+  try {
+    const outreach = await request(
+      `/api/discovered-prospects/${encodeURIComponent(prospectId)}/outreach`,
+      { method: 'POST' }
+    );
+
+    if (outreach.email) {
+      const mailto = new URL(`mailto:${outreach.email}`);
+      mailto.searchParams.set('subject', outreach.subject);
+      mailto.searchParams.set('body', outreach.body);
+
+      if (feedback) {
+        feedback.className = 'outreach-feedback success';
+        feedback.innerHTML =
+          `Found <strong>${escapeHtml(outreach.email)}</strong> from a public source. Opening your email app…`;
+      }
+      window.location.href = mailto.toString();
+    } else {
+      const copied = await copyText(`${outreach.subject}\n\n${outreach.body}`);
+      if (feedback) {
+        feedback.className = 'outreach-feedback warning';
+        feedback.textContent = copied
+          ? 'No public email found. The suggested outreach draft was copied to your clipboard.'
+          : 'No public email found. Use the Website action to find the organization’s preferred contact route.';
+      }
+    }
+  } catch (error) {
+    if (feedback) {
+      feedback.className = 'outreach-feedback error';
+      feedback.textContent = error.message || 'Unable to prepare outreach.';
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
