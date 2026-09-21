@@ -2,7 +2,7 @@
 
 Gather is a Java/Spring Boot application that helps restaurants discover and prioritize nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
 
-The project started as a single-location catering discovery prototype. v0.3 removes the fixed restaurant and fixed-city assumptions: a user now enters **their own restaurant name, type, address, and search radius**, and Gather builds a location-specific discovery run from that profile.
+The project started as a single-location catering discovery prototype. Gather v0.8 now supports restaurant/franchise autocomplete, optional restaurant-profile refinement, evidence-aware reranking, grounded generative analysis, outreach assistance, and a Radius map of discovered prospects.
 
 ## Product thesis
 
@@ -17,15 +17,17 @@ The core object is an explainable prospect recommendation rather than an opaque 
 ## Current user flow
 
 ```text
-Restaurant name + type + address
-  -> address geocoding
-  -> restaurant campaign
-  -> discovery run
+Restaurant/franchise search
+  -> choose location
+  -> inferred + optional restaurant profile
+  -> choose Radius
   -> nearby organization discovery
   -> canonicalization / dedupe
-  -> explainable scoring
-  -> persisted prospect list
-  -> source-linked review
+  -> cold-start score
+  -> public-site evidence extraction for top prospects
+  -> restaurant-fit + evidence reranking
+  -> Radius map + ranked prospect list
+  -> grounded AI analysis / outreach
 ```
 
 The frontend at `http://localhost:8000` now drives this flow directly.
@@ -36,14 +38,18 @@ There is no hard-coded restaurant identity in the primary workflow.
 
 Each campaign stores:
 - restaurant name
-- restaurant type
+- inferred restaurant type
 - normalized origin address
 - latitude / longitude
 - search radius
+- catering/group-order capability
+- primary daypart
+- price position
+- practical delivery radius
 
 That lets the same application run for a cafe in San Francisco, a pizza shop in Oakland, a breakfast restaurant in San Jose, or a catering-focused operation in another market.
 
-The current ranking is still a **cold-start catering/group-order heuristic**. Restaurant type is persisted so future scoring can learn different ideal-customer profiles instead of pretending every restaurant converts the same kinds of accounts.
+The first pass still uses a cold-start catering/group-order heuristic, but v0.8 automatically enriches the strongest candidates with restaurant-profile fit and public website evidence before reranking them. The numeric ranking remains deterministic; the LLM is used for grounded explanation and outreach rather than inventing the score.
 
 ## Architecture
 
@@ -53,16 +59,28 @@ Restaurant Campaign
   -> Prospect Sources
   -> Canonicalization / dedupe
   -> Persisted candidates
-  -> Evidence enrichment (next)
-  -> Explainable scoring
-  -> Grounded outreach (next)
+  -> Restaurant-fit assessment
+  -> Public-site evidence extraction
+  -> Evidence-aware reranking
+  -> Radius map
+  -> Grounded AI explanation / outreach
   -> Outcome feedback (next)
 ```
 
 ### Discovery
-- OpenStreetMap / Overpass for geographic organization discovery
-- actual restaurant coordinates drive proximity scoring
+- Photon / OpenStreetMap for fast nearby organization discovery
+- Overpass remains a secondary source when additional coverage is needed
+- actual restaurant and prospect coordinates drive proximity scoring and the Radius map
 - public website/phone availability drives contactability
+
+### Restaurant profile + Evidence Engine
+Gather infers a default profile from the selected restaurant and keeps the profile controls collapsed by default. Users can refine:
+- catering / group-order capability
+- primary daypart
+- price position
+- practical delivery radius
+
+After discovery, Gather automatically evidence-enriches the strongest prospects. It scans reachable public website text for meeting/event, group-food, and organization-scale signals. The adjusted score uses the original cold-start score plus explicit **Profile Fit** and **Evidence** components. Evidence snippets retain their public source URL.
 
 ### Address lookup
 The prototype uses the public OpenStreetMap Nominatim service for user-triggered address lookup only. Results are cached in-process, requests are serialized/rate-limited, the application sends an identifying User-Agent, and the provider URL is configurable with `GEOCODING_BASE_URL`.
@@ -169,27 +187,36 @@ The legacy direct discovery endpoint `POST /api/discover` now requires explicit 
 
 ## Scoring today
 
-Cold-start score (100 points):
-- proximity: 25
-- organization scale: 20
-- event / meeting signal: 25
-- likely group-food need: 20
-- public contactability: 10
+Gather intentionally separates ranking from generative AI.
 
-Proximity uses actual distance. Contactability uses available public website/phone fields. The other dimensions still use category priors until evidence extraction is automated.
+The cold-start score is based on:
+- proximity
+- organization scale prior
+- event / meeting prior
+- likely group-food need prior
+- public contactability
+
+v0.8 then computes:
+- **Profile Fit (0-10):** restaurant concept, catering capability, daypart, price position, delivery radius, prospect category, and distance
+- **Evidence (0-10):** grounded signals found on the prospect's reachable public website
+
+The adjusted score is:
+
+`round(base_score * 0.80) + profile_fit + evidence`, capped at 100.
+
+The top prospects are enriched automatically after the initial list appears, so users see results quickly instead of waiting for every external website. Lower-ranked prospects can still be investigated through the evidence and AI analysis actions.
 
 ## Next product milestones
 
-1. Extract structured claims from prospect websites.
-2. Add evidence freshness, confidence, and conflict handling.
-3. Make scoring restaurant-type-aware (pizza vs breakfast vs full-service vs catering).
-4. Add menu/service constraints: minimum order, delivery radius, dayparts, lead time, dietary support.
-5. Add natural-language ICP controls.
-6. Add salesperson outcomes (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`) and learn from them.
-7. Add CRM / CSV import and export.
-8. Add multi-tenant organizations and authentication.
-9. Add production geocoding and licensed enrichment providers.
-10. Measure whether evidence-backed ranking improves reply and conversion rates.
+1. Convert keyword evidence into structured claims with freshness/confidence.
+2. Follow linked event, meeting, team, department, and contact pages during evidence extraction.
+3. Add menu/service constraints: minimum order, order capacity, lead time, dietary support, and delivery rules.
+4. Add natural-language ICP controls.
+5. Add prospect outcomes (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`) and use them as ranking feedback.
+6. Add saved campaigns, notes, CSV/CRM export, and Gmail workflow integration.
+7. Add multi-tenant organizations and authentication.
+8. Move autocomplete/discovery/contact enrichment to production-grade licensed providers.
+9. Measure whether evidence-aware ranking improves reply and conversion rates.
 
 ## Positioning
 
