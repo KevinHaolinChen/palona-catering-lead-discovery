@@ -69,9 +69,6 @@ public class CampaignService {
         CampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + campaignId));
         Instant now = Instant.now();
-        campaign.markRefreshed(now);
-        campaignRepository.save(campaign);
-
         DiscoveryRunEntity run = runRepository.save(new DiscoveryRunEntity(
                 UUID.randomUUID().toString(), campaign.getId(), "QUEUED", now));
         runProcessor.processAsync(run.getId(), campaign.getId());
