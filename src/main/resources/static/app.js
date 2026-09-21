@@ -618,7 +618,7 @@ async function loadDashboard() {
     state.dashboard = dashboard;
     salesLoop.hidden = false;
     pipelineDue.textContent = dashboard.due_today_count || 0;
-    pipelineNew.textContent = dashboard.new_count || 0;
+    pipelineNew.textContent = dashboard.new_this_week_count || dashboard.new_count || 0;
     pipelineContacted.textContent = dashboard.contacted_count || 0;
     pipelineReplied.textContent = dashboard.replied_count || 0;
     pipelineWon.textContent = dashboard.won_count || 0;
