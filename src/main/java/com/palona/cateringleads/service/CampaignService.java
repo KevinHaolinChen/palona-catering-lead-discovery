@@ -53,6 +53,9 @@ public class CampaignService {
                 primaryDaypart,
                 priceTier,
                 deliveryRadiusMiles,
+                false,
+                7,
+                null,
                 Instant.now()
         );
         return toResponse(campaignRepository.save(entity));
@@ -62,13 +65,26 @@ public class CampaignService {
         return campaignRepository.findAll().stream().map(CampaignService::toResponse).toList();
     }
 
+    @Transactional
     public DiscoveryRunResponse startRun(String campaignId) {
         CampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + campaignId));
+        Instant now = Instant.now();
+        campaign.markRefreshed(now);
+        campaignRepository.save(campaign);
+
         DiscoveryRunEntity run = runRepository.save(new DiscoveryRunEntity(
-                UUID.randomUUID().toString(), campaign.getId(), "QUEUED", Instant.now()));
+                UUID.randomUUID().toString(), campaign.getId(), "QUEUED", now));
         runProcessor.processAsync(run.getId(), campaign.getId());
         return toResponse(run);
+    }
+
+    @Transactional
+    public CampaignResponse configureMonitoring(String campaignId, boolean enabled, int intervalDays) {
+        CampaignEntity campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + campaignId));
+        campaign.configureMonitoring(enabled, intervalDays);
+        return toResponse(campaignRepository.save(campaign));
     }
 
     public DiscoveryRunResponse findRun(String runId) {
@@ -89,6 +105,9 @@ public class CampaignService {
                 c.getPrimaryDaypart(),
                 c.getPriceTier(),
                 c.getDeliveryRadiusMiles(),
+                c.isMonitoringEnabled(),
+                c.getRefreshIntervalDays(),
+                c.getLastRefreshAt(),
                 c.getCreatedAt()
         );
     }
