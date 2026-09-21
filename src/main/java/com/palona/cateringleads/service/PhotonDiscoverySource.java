@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class PhotonDiscoverySource implements ProspectSource {
 
     private static final String USER_AGENT =
-            "VerityScout/0.5 (+https://github.com/KevinHaolinChen/verityscout)";
+            "Gather/0.8 (+https://github.com/KevinHaolinChen/verityscout)";
 
     private final JsonMapper jsonMapper;
     private final ScoringService scoringService;
@@ -159,6 +159,8 @@ public class PhotonDiscoverySource implements ProspectSource {
                         address,
                         website,
                         phone,
+                        lat,
+                        lon,
                         distance,
                         sourceUrl,
                         sourceName(),
