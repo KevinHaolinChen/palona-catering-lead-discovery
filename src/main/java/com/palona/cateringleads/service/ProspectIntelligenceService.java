@@ -125,6 +125,10 @@ public class ProspectIntelligenceService {
                 name=%s
                 inferred_type=%s
                 origin_address=%s
+                supports_catering=%s
+                primary_daypart=%s
+                price_tier=%s
+                delivery_radius_miles=%d
 
                 Prospect:
                 name=%s
@@ -133,7 +137,11 @@ public class ProspectIntelligenceService {
                 distance_miles=%.2f
                 website=%s
                 phone=%s
-                deterministic_score=%d
+                base_score=%d
+                adjusted_score=%d
+                profile_fit_score=%d
+                evidence_score=%d
+                evidence_summary=%s
                 score_components=%s
                 source=%s
                 source_url=%s
@@ -144,13 +152,21 @@ public class ProspectIntelligenceService {
                 context.campaign().getName(),
                 context.campaign().getBusinessType(),
                 context.campaign().getOriginAddress(),
+                context.campaign().isSupportsCatering(),
+                context.campaign().getPrimaryDaypart(),
+                context.campaign().getPriceTier(),
+                context.campaign().getDeliveryRadiusMiles(),
                 context.prospect().getOrganization(),
                 context.prospect().getCategory(),
                 context.prospect().getAddress(),
                 context.prospect().getDistanceMiles(),
                 nullToEmpty(context.prospect().getWebsite()),
                 nullToEmpty(context.prospect().getPhone()),
+                context.prospect().getBaseScore(),
                 context.prospect().getScore(),
+                context.prospect().getProfileFitScore(),
+                context.prospect().getEvidenceScore(),
+                nullToEmpty(context.prospect().getEvidenceSummary()),
                 context.prospect().getScoreExplanation(),
                 nullToEmpty(context.prospect().getSourceName()),
                 nullToEmpty(context.prospect().getSourceUrl()),
