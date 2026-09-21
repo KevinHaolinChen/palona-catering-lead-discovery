@@ -836,6 +836,8 @@ async function markContactedAfterOutreach(prospectId) {
       }
     );
     state.prospects = state.prospects.map(item => item.id === prospectId ? updated : item);
+    renderProspects();
+    renderRadiusMap();
     await loadDashboard();
   } catch {
     // Outreach itself should still work if pipeline persistence fails.
@@ -882,7 +884,13 @@ function renderRadiusMap() {
   }
 
   const threshold = Number(minScore.value);
-  const visible = state.prospects.filter(prospect => Number(prospect.score) >= threshold);
+  const pipelineFilter = stageFilter.value;
+  let visible = state.prospects.filter(prospect => Number(prospect.score) >= threshold);
+  if (pipelineFilter === 'DUE') {
+    visible = visible.filter(isFollowUpDue);
+  } else if (pipelineFilter !== 'ALL') {
+    visible = visible.filter(prospect => pipelineStage(prospect.pipeline_stage) === pipelineFilter);
+  }
 
   visible.forEach(prospect => {
     const lat = Number(prospect.latitude);
@@ -925,31 +933,38 @@ function renderRadiusMap() {
 async function enrichTopProspects() {
   if (!state.run || !state.prospects.length) return;
 
-  const targets = [...state.prospects]
-    .sort((a, b) => Number(b.score) - Number(a.score))
-    .slice(0, 10);
-
-  setStatus(`Found ${state.prospects.length} prospects. Refining the top ${targets.length} with restaurant fit and public evidence…`);
-
-  await Promise.allSettled(
-    targets.map(prospect => request(
-      `/api/discovered-prospects/${encodeURIComponent(prospect.id)}/evidence`,
-      { method: 'POST' }
-    ))
+  const targetCount = Math.min(10, state.prospects.length);
+  setStatus(
+    `Found ${state.prospects.length} prospects. Gather is enriching the strongest candidates in the background…`
   );
 
   try {
-    state.prospects = await request(`/api/runs/${encodeURIComponent(state.run.id)}/prospects`);
-    renderMetrics();
-    renderProspects();
-    renderRadiusMap();
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      if (attempt > 0) await delay(1400);
+
+      const refreshed = await request(
+        `/api/runs/${encodeURIComponent(state.run.id)}/prospects`
+      );
+      state.prospects = refreshed;
+
+      const enrichedCount = refreshed
+        .slice(0, targetCount)
+        .filter(prospect => Boolean(prospect.evidence_summary)).length;
+
+      renderMetrics();
+      renderProspects();
+      renderRadiusMap();
+
+      if (enrichedCount >= targetCount) break;
+    }
+
     setStatus(
-      `Complete. Ranked ${state.prospects.length} prospects and evidence-enriched the strongest candidates.`,
+      `Complete. ${state.prospects.length} prospects are ready, with background evidence and learned ranking applied where available.`,
       'success'
     );
   } catch {
     setStatus(
-      `Complete. Found ${state.prospects.length} prospects; some evidence enrichment could not be refreshed.`,
+      `Complete. Found ${state.prospects.length} prospects; background evidence will continue independently.`,
       'success'
     );
   }
