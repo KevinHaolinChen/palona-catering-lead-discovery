@@ -14,5 +14,8 @@ public record CampaignResponse(
         String primaryDaypart,
         String priceTier,
         int deliveryRadiusMiles,
+        boolean monitoringEnabled,
+        int refreshIntervalDays,
+        Instant lastRefreshAt,
         Instant createdAt
 ) {}
