@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.1.0</version><relativePath/></parent>
-    <groupId>com.palona</groupId><artifactId>verityscout</artifactId><version>0.2.0</version>
+    <groupId>com.palona</groupId><artifactId>verityscout</artifactId><version>0.8.0</version>
     <name>Gather</name>
     <description>AI-powered restaurant growth intelligence with explainable scoring, grounded analysis, and source provenance.</description>
     <properties><java.version>21</java.version></properties>
