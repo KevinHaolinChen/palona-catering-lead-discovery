@@ -23,6 +23,13 @@ const radius = document.getElementById('radius');
 const radiusValue = document.getElementById('radiusValue');
 const aiStatusPill = document.getElementById('aiStatusPill');
 const aiStatusText = document.getElementById('aiStatusText');
+const supportsCatering = document.getElementById('supportsCatering');
+const primaryDaypart = document.getElementById('primaryDaypart');
+const priceTier = document.getElementById('priceTier');
+const deliveryRadius = document.getElementById('deliveryRadius');
+const deliveryRadiusValue = document.getElementById('deliveryRadiusValue');
+const mapSection = document.getElementById('mapSection');
+const mapStatus = document.getElementById('mapStatus');
 
 const state = {
   selectedRestaurant: null,
@@ -35,6 +42,8 @@ const state = {
 
 let searchTimer = null;
 let searchController = null;
+let radiusMap = null;
+let radiusMapLayer = null;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -87,6 +96,27 @@ function setRunBadge(status) {
 function updateRadiusDisplay() {
   const miles = Number(radius.value);
   radiusValue.textContent = miles >= 50 ? '50+ mi' : `${miles} mi`;
+}
+
+function updateDeliveryRadiusDisplay() {
+  deliveryRadiusValue.textContent = `${deliveryRadius.value} mi`;
+}
+
+function applyProfileDefaults(match) {
+  const type = inferRestaurantType(match);
+  supportsCatering.checked = true;
+  priceTier.value = 'mid';
+
+  if (['breakfast_brunch', 'cafe_bakery'].includes(type)) {
+    primaryDaypart.value = 'breakfast_lunch';
+  } else if (['pizza', 'fast_casual'].includes(type)) {
+    primaryDaypart.value = 'lunch_dinner';
+  } else {
+    primaryDaypart.value = 'all_day';
+  }
+
+  deliveryRadius.value = String(Math.max(1, Math.min(10, Number(radius.value) || 5)));
+  updateDeliveryRadiusDisplay();
 }
 
 function humanize(value) {
@@ -173,6 +203,7 @@ function selectRestaurant(index) {
   selectedRestaurantAddress.textContent = match.address;
   selectedRestaurant.hidden = false;
   restaurantSearchResults.hidden = true;
+  applyProfileDefaults(match);
   setStatus(`Selected ${match.name}. Choose a radius and run discovery.`, 'success');
 }
 
@@ -239,6 +270,11 @@ function prospectCard(prospect) {
   const phone = prospect.phone ? String(prospect.phone).trim() : '';
   const phoneHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null;
 
+  const evidenceSource = safeHttpUrl(prospect.evidence_source_url);
+  const evidenceSummary = prospect.evidence_summary
+    ? `<div class="evidence-note"><strong>Public evidence</strong><span>${escapeHtml(prospect.evidence_summary)}</span>${evidenceSource ? `<a href="${escapeHtml(evidenceSource)}" target="_blank" rel="noreferrer">source ↗</a>` : ''}</div>`
+    : '';
+
   const actions = [
     `<button class="action-link email-action" type="button" data-email-prospect="${escapeHtml(prospect.id)}">Email lead</button>`,
     website ? `<a class="action-link" href="${escapeHtml(website)}" target="_blank" rel="noreferrer">Website ↗</a>` : '',
@@ -254,6 +290,8 @@ function prospectCard(prospect) {
           <span class="category-chip">${escapeHtml(humanize(prospect.category))}</span>
           <span class="signal-chip">${escapeHtml(Number(prospect.distance_miles).toFixed(1))} mi away</span>
           ${prospect.source_name ? `<span class="signal-chip">${escapeHtml(prospect.source_name)}</span>` : ''}
+          ${Number(prospect.profile_fit_score || 0) > 0 ? `<span class="signal-chip evidence-chip">Fit +${escapeHtml(prospect.profile_fit_score)}</span>` : ''}
+          ${Number(prospect.evidence_score || 0) > 0 ? `<span class="signal-chip evidence-chip">Evidence +${escapeHtml(prospect.evidence_score)}</span>` : ''}
         </div>
         <h3>${escapeHtml(prospect.organization)}</h3>
         <div class="prospect-meta">
@@ -261,6 +299,7 @@ function prospectCard(prospect) {
           ${phone ? `<span>${escapeHtml(phone)}</span>` : ''}
         </div>
         <div class="score-explanation">${parseScoreExplanation(prospect.score_explanation)}</div>
+        ${evidenceSummary}
         <details class="why-lead" data-insight-prospect="${escapeHtml(prospect.id)}">
           <summary>
             <span>Why Gather chose this</span>
@@ -311,8 +350,10 @@ function revealResults() {
   emptyState.hidden = true;
   metrics.hidden = false;
   resultControls.hidden = false;
+  mapSection.hidden = false;
   renderMetrics();
   renderProspects();
+  renderRadiusMap();
 }
 
 function delay(ms) {
@@ -370,6 +411,10 @@ async function handleCampaignSubmit(event) {
         latitude: restaurant.latitude,
         longitude: restaurant.longitude,
         radius_meters: radiusMeters,
+        supports_catering: supportsCatering.checked,
+        primary_daypart: primaryDaypart.value,
+        price_tier: priceTier.value,
+        delivery_radius_miles: Number(deliveryRadius.value),
       }),
     });
 
@@ -388,6 +433,7 @@ async function handleCampaignSubmit(event) {
       'success'
     );
     revealResults();
+    enrichTopProspects();
   } catch (error) {
     setRunBadge('FAILED');
     setStatus(error.message || 'Something went wrong.', 'error');
@@ -435,13 +481,131 @@ changeRestaurant.addEventListener('click', () => {
 
 campaignForm.addEventListener('submit', handleCampaignSubmit);
 radius.addEventListener('input', updateRadiusDisplay);
-minScore.addEventListener('input', renderProspects);
+deliveryRadius.addEventListener('input', updateDeliveryRadiusDisplay);
+minScore.addEventListener('input', () => {
+  renderProspects();
+  renderRadiusMap();
+});
 sortBy.addEventListener('change', renderProspects);
 
 updateRadiusDisplay();
+updateDeliveryRadiusDisplay();
 requestLiveLocation();
 loadAiStatus();
 
+
+
+function validCoordinate(value, min, max) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= min && number <= max;
+}
+
+function renderRadiusMap() {
+  if (!window.L || !state.campaign || mapSection.hidden) return;
+
+  if (!radiusMap) {
+    radiusMap = L.map('radiusMap', {
+      zoomControl: true,
+      scrollWheelZoom: false,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(radiusMap);
+    radiusMapLayer = L.layerGroup().addTo(radiusMap);
+  }
+
+  radiusMapLayer.clearLayers();
+
+  const points = [];
+  const restaurantLat = Number(state.campaign.latitude);
+  const restaurantLon = Number(state.campaign.longitude);
+
+  if (validCoordinate(restaurantLat, -90, 90) && validCoordinate(restaurantLon, -180, 180)) {
+    const restaurantMarker = L.circleMarker([restaurantLat, restaurantLon], {
+      radius: 10,
+      weight: 3,
+      color: '#71f2c2',
+      fillColor: '#071019',
+      fillOpacity: 1,
+    }).bindPopup(`<strong>${escapeHtml(state.campaign.name)}</strong><br>Your restaurant`);
+    restaurantMarker.addTo(radiusMapLayer);
+    points.push([restaurantLat, restaurantLon]);
+  }
+
+  const threshold = Number(minScore.value);
+  const visible = state.prospects.filter(prospect => Number(prospect.score) >= threshold);
+
+  visible.forEach(prospect => {
+    const lat = Number(prospect.latitude);
+    const lon = Number(prospect.longitude);
+    if (!validCoordinate(lat, -90, 90) || !validCoordinate(lon, -180, 180)) return;
+    if (lat === 0 && lon === 0) return;
+
+    const score = Number(prospect.score || 0);
+    const marker = L.circleMarker([lat, lon], {
+      radius: Math.max(6, Math.min(11, 5 + score / 20)),
+      weight: 2,
+      color: score >= 75 ? '#71f2c2' : '#6db7ff',
+      fillColor: '#0f1d28',
+      fillOpacity: 0.92,
+    }).bindPopup(
+      `<strong>${escapeHtml(prospect.organization)}</strong><br>` +
+      `${escapeHtml(humanize(prospect.category))} · ${score}/100<br>` +
+      `${escapeHtml(Number(prospect.distance_miles).toFixed(1))} mi away`
+    );
+
+    marker.on('click', () => {
+      const card = prospectList.querySelector(`[data-prospect-card="${CSS.escape(prospect.id)}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    marker.addTo(radiusMapLayer);
+    points.push([lat, lon]);
+  });
+
+  if (points.length > 1) {
+    radiusMap.fitBounds(points, { padding: [28, 28], maxZoom: 13 });
+  } else if (points.length === 1) {
+    radiusMap.setView(points[0], 11);
+  }
+
+  mapStatus.textContent = `${Math.max(0, points.length - 1)} mapped prospects`;
+  setTimeout(() => radiusMap.invalidateSize(), 0);
+}
+
+async function enrichTopProspects() {
+  if (!state.run || !state.prospects.length) return;
+
+  const targets = [...state.prospects]
+    .sort((a, b) => Number(b.score) - Number(a.score))
+    .slice(0, 10);
+
+  setStatus(`Found ${state.prospects.length} prospects. Refining the top ${targets.length} with restaurant fit and public evidence…`);
+
+  await Promise.allSettled(
+    targets.map(prospect => request(
+      `/api/discovered-prospects/${encodeURIComponent(prospect.id)}/evidence`,
+      { method: 'POST' }
+    ))
+  );
+
+  try {
+    state.prospects = await request(`/api/runs/${encodeURIComponent(state.run.id)}/prospects`);
+    renderMetrics();
+    renderProspects();
+    renderRadiusMap();
+    setStatus(
+      `Complete. Ranked ${state.prospects.length} prospects and evidence-enriched the strongest candidates.`,
+      'success'
+    );
+  } catch {
+    setStatus(
+      `Complete. Found ${state.prospects.length} prospects; some evidence enrichment could not be refreshed.`,
+      'success'
+    );
+  }
+}
 
 
 async function loadAiStatus() {
