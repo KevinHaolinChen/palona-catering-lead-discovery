@@ -28,6 +28,10 @@ class CampaignPersistenceTest {
                     assertThat(campaign.id()).isEqualTo(created.id());
                     assertThat(campaign.name()).isEqualTo("Harbor Pizza");
                     assertThat(campaign.businessType()).isEqualTo("pizza");
+                    assertThat(campaign.supportsCatering()).isTrue();
+                    assertThat(campaign.primaryDaypart()).isEqualTo("lunch_dinner");
+                    assertThat(campaign.priceTier()).isEqualTo("mid");
+                    assertThat(campaign.deliveryRadiusMiles()).isEqualTo(5);
                 });
     }
 }
