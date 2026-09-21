@@ -65,7 +65,6 @@ public class CampaignService {
         return campaignRepository.findAll().stream().map(CampaignService::toResponse).toList();
     }
 
-    @Transactional
     public DiscoveryRunResponse startRun(String campaignId) {
         CampaignEntity campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found: " + campaignId));
