@@ -116,6 +116,9 @@ public class DiscoveryRunProcessor {
 
             run.markCompleted(entities.size());
             runRepository.save(run);
+
+            campaign.markRefreshed(java.time.Instant.now());
+            campaignRepository.save(campaign);
         } catch (Exception exception) {
             run.markFailed(rootMessage(exception));
             runRepository.save(run);
