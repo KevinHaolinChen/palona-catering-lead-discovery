@@ -1,8 +1,8 @@
-# Gather — Restaurant Prospect Intelligence
+# Gather — Local B2B Sales System for Restaurants
 
-Gather is a Java/Spring Boot application that helps restaurants discover and prioritize nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
+Gather is a Java/Spring Boot application that helps restaurants continuously discover, prioritize, contact, follow up with, and learn from nearby B2B prospects for catering, group orders, team meals, meetings, and local events.
 
-The project started as a single-location catering discovery prototype. Gather v0.8 now supports restaurant/franchise autocomplete, optional restaurant-profile refinement, evidence-aware reranking, grounded generative analysis, outreach assistance, and a Radius map of discovered prospects.
+The project started as a single-location catering discovery prototype. Gather v0.9 shifts the product from a one-time lead finder into a persistent sales workspace: Radius discovery, saved prospect stages, follow-up scheduling, recurring Radius Watch refreshes, outcome-aware ranking, evidence enrichment, grounded generative analysis, and outreach assistance.
 
 ## Product thesis
 
@@ -10,24 +10,26 @@ Restaurants often have valuable organizations nearby — offices, campuses, hosp
 
 Gather asks:
 
-> **Which nearby organizations are worth contacting, why are they ranked highly, and what public source supports the recommendation?**
+> **Who should this restaurant pursue next, what should happen today, and what has actually worked for this restaurant before?**
 
-The core object is an explainable prospect recommendation rather than an opaque contact row.
+The core object is no longer a disposable lead list. Each restaurant campaign is a persistent local sales territory whose prospects retain pipeline state, follow-ups, evidence, and outcomes across Radius refreshes.
 
 ## Current user flow
 
 ```text
 Restaurant/franchise search
-  -> choose location
+  -> persistent restaurant sales workspace
   -> inferred + optional restaurant profile
   -> choose Radius
   -> nearby organization discovery
-  -> canonicalization / dedupe
-  -> cold-start score
-  -> public-site evidence extraction for top prospects
-  -> restaurant-fit + evidence reranking
-  -> Radius map + ranked prospect list
-  -> grounded AI analysis / outreach
+  -> evidence-aware ranking
+  -> Radius map
+  -> pipeline stage + notes + next follow-up
+  -> outreach
+  -> replies / wins / losses
+  -> outcome learning
+  -> manual refresh or recurring Radius Watch
+  -> new prospects inherit the restaurant's learned preferences
 ```
 
 The frontend at `http://localhost:8000` now drives this flow directly.
@@ -49,7 +51,7 @@ Each campaign stores:
 
 That lets the same application run for a cafe in San Francisco, a pizza shop in Oakland, a breakfast restaurant in San Jose, or a catering-focused operation in another market.
 
-The first pass still uses a cold-start catering/group-order heuristic, but v0.8 automatically enriches the strongest candidates with restaurant-profile fit and public website evidence before reranking them. The numeric ranking remains deterministic; the LLM is used for grounded explanation and outreach rather than inventing the score.
+The first pass still uses a cold-start catering/group-order heuristic, but v0.9 layers restaurant-profile fit, public website evidence, and historical outcome learning onto future refreshes. The numeric ranking remains deterministic; the LLM is used for grounded explanation and outreach rather than inventing the score.
 
 ## Architecture
 
@@ -64,7 +66,11 @@ Restaurant Campaign
   -> Evidence-aware reranking
   -> Radius map
   -> Grounded AI explanation / outreach
-  -> Outcome feedback (next)
+  -> Persistent sales pipeline
+  -> Follow-up queue
+  -> Outcome feedback
+  -> Learned category adjustment
+  -> Radius Watch refresh loop
 ```
 
 ### Discovery
@@ -81,6 +87,23 @@ Gather infers a default profile from the selected restaurant and keeps the profi
 - practical delivery radius
 
 After discovery, Gather automatically evidence-enriches the strongest prospects. It scans reachable public website text for meeting/event, group-food, and organization-scale signals. The adjusted score uses the original cold-start score plus explicit **Profile Fit** and **Evidence** components. Evidence snippets retain their public source URL.
+
+### Sales Loop + Radius Watch
+Each discovered prospect can move through:
+
+`NEW -> REVIEWED -> CONTACTED -> FOLLOW_UP -> REPLIED -> WON | LOST`
+
+Gather stores:
+- pipeline stage
+- next follow-up date
+- salesperson note
+- first seen / last seen timestamps
+- last contacted timestamp
+- learned ranking adjustment
+
+A restaurant workspace can be reopened after a browser refresh and manually refreshed without losing pipeline history. **Radius Watch** can also rerun enabled campaigns on a recurring interval (daily through every 30 days). New discovery runs inherit the latest pipeline state for already-known accounts.
+
+The **Today** dashboard shows follow-ups due, genuinely new prospects discovered this week, contacted accounts, replies, and wins.
 
 ### Address lookup
 The prototype uses the public OpenStreetMap Nominatim service for user-triggered address lookup only. Results are cached in-process, requests are serialized/rate-limited, the application sends an identifying User-Agent, and the provider URL is configurable with `GEOCODING_BASE_URL`.
@@ -177,6 +200,37 @@ Inspect results:
 ```http
 GET /api/runs/{runId}
 GET /api/runs/{runId}/prospects
+GET /api/campaigns/{campaignId}/prospects
+GET /api/campaigns/{campaignId}/dashboard
+```
+
+Update a prospect's sales state:
+
+```http
+PATCH /api/discovered-prospects/{prospectId}/pipeline
+Content-Type: application/json
+```
+
+```json
+{
+  "stage": "FOLLOW_UP",
+  "next_follow_up_at": "2026-09-24T19:00:00Z",
+  "note": "Sent catering menu; follow up Wednesday"
+}
+```
+
+Enable recurring Radius Watch:
+
+```http
+PATCH /api/campaigns/{campaignId}/monitoring
+Content-Type: application/json
+```
+
+```json
+{
+  "enabled": true,
+  "interval_days": 7
+}
 ```
 
 ## Legacy evidence demo
@@ -196,27 +250,26 @@ The cold-start score is based on:
 - likely group-food need prior
 - public contactability
 
-v0.8 then computes:
+v0.9 computes and persists:
 - **Profile Fit (0-10):** restaurant concept, catering capability, daypart, price position, delivery radius, prospect category, and distance
 - **Evidence (0-10):** grounded signals found on the prospect's reachable public website
+- **Learning (-8 to +8):** category-level adjustment derived from the latest `REPLIED`, `WON`, and `LOST` outcomes in that restaurant workspace
 
-The adjusted score is:
-
-`round(base_score * 0.80) + profile_fit + evidence`, capped at 100.
+The evidence-adjusted score is `round(base_score * 0.80) + profile_fit + evidence`, and the learned outcome adjustment is then applied, capped to 0–100.
 
 The top prospects are enriched automatically after the initial list appears, so users see results quickly instead of waiting for every external website. Lower-ranked prospects can still be investigated through the evidence and AI analysis actions.
 
 ## Next product milestones
 
-1. Convert keyword evidence into structured claims with freshness/confidence.
-2. Follow linked event, meeting, team, department, and contact pages during evidence extraction.
-3. Add menu/service constraints: minimum order, order capacity, lead time, dietary support, and delivery rules.
-4. Add natural-language ICP controls.
-5. Add prospect outcomes (`BAD_LEAD`, `REPLIED`, `MEETING`, `WON`) and use them as ranking feedback.
-6. Add saved campaigns, notes, CSV/CRM export, and Gmail workflow integration.
-7. Add multi-tenant organizations and authentication.
+1. Add reply/sent synchronization through Gmail so pipeline state does not rely on manual updates.
+2. Add structured evidence claims with freshness/confidence and monitor material prospect changes.
+3. Add revenue/order value to `WON` outcomes so learning optimizes for dollars, not only conversions.
+4. Add menu/service constraints: minimum order, capacity, lead time, dietary support, and delivery rules.
+5. Add campaign playbooks for office lunch, schools, holiday events, universities, and other recurring motions.
+6. Add notification delivery for due follow-ups and newly discovered high-fit prospects.
+7. Add multi-tenant organizations, authentication, roles, and production billing.
 8. Move autocomplete/discovery/contact enrichment to production-grade licensed providers.
-9. Measure whether evidence-aware ranking improves reply and conversion rates.
+9. Measure retention, reply rate, win rate, and catering revenue influenced by Gather.
 
 ## Positioning
 
@@ -224,6 +277,6 @@ Gather is not trying to be another giant contact database.
 
 Its wedge is:
 
-> **Explainable, location-aware prospect intelligence for restaurants that want more local B2B revenue.**
+> **The local B2B sales system for restaurants that want recurring catering and group-order revenue.**
 
 The longer-term platform can generalize beyond restaurants by making the scoring profile, buying signals, and source adapters configurable by business vertical.
