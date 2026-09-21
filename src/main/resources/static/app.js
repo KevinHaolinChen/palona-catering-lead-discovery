@@ -211,6 +211,9 @@ function selectRestaurant(index) {
   if (!match) return;
 
   state.selectedRestaurant = match;
+  state.campaign = null;
+  state.run = null;
+  state.dashboard = null;
   restaurantSearch.value = match.name;
   selectedRestaurantName.textContent = match.name;
   selectedRestaurantAddress.textContent = match.address;
@@ -483,6 +486,13 @@ async function handleCampaignSubmit(event) {
     return;
   }
 
+  if (state.campaign
+      && state.campaign.name === restaurant.name
+      && state.campaign.address === restaurant.address) {
+    await refreshCurrentCampaign();
+    return;
+  }
+
   const restaurantType = inferRestaurantType(restaurant);
   const radiusMiles = Number(radius.value);
   const radiusMeters = Math.round(radiusMiles * 1609.344);
@@ -568,6 +578,9 @@ document.addEventListener('click', event => {
 
 changeRestaurant.addEventListener('click', () => {
   state.selectedRestaurant = null;
+  state.campaign = null;
+  state.run = null;
+  state.dashboard = null;
   selectedRestaurant.hidden = true;
   restaurantSearch.value = '';
   restaurantSearchResults.hidden = true;
