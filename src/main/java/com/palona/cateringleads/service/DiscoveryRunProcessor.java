@@ -10,7 +10,6 @@ import com.palona.cateringleads.persistence.DiscoveryRunEntity;
 import com.palona.cateringleads.persistence.DiscoveryRunRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -46,7 +45,6 @@ public class DiscoveryRunProcessor {
     }
 
     @Async
-    @Transactional
     public void processAsync(String runId, String campaignId) {
         DiscoveryRunEntity run = runRepository.findById(runId).orElseThrow();
         try {
