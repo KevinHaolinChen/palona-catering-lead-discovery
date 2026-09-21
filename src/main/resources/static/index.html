@@ -153,6 +153,16 @@
             Search for your restaurant to begin.
           </div>
 
+          <section class="workspace-history">
+            <div class="workspace-history-head">
+              <span>YOUR WORKSPACES</span>
+              <small>Return to an active sales territory</small>
+            </div>
+            <div id="workspaceList" class="workspace-list">
+              <span class="workspace-empty">No saved workspaces yet.</span>
+            </div>
+          </section>
+
           <p class="attribution">
             Restaurant autocomplete uses Photon with optional browser location bias. Prospect discovery uses Photon first,
             with OpenStreetMap Overpass as a secondary source when needed.
@@ -165,11 +175,41 @@
               <div class="eyebrow">RADIUS · PROSPECT WORKSPACE</div>
               <h2 id="resultsTitle">Your prospect intelligence will appear here.</h2>
               <p id="resultsSubtitle">
-                Select a restaurant location, then Gather Radius will scan nearby organizations, score them transparently, and generate prospect-specific analysis on demand.
+                Discover prospects, work them through the pipeline, follow up, and let Gather learn which local accounts actually convert for this restaurant.
               </p>
             </div>
             <span id="runBadge" class="run-badge idle">IDLE</span>
           </div>
+
+          <section id="salesLoop" class="sales-loop" hidden>
+            <div class="sales-loop-head">
+              <div>
+                <span class="eyebrow">TODAY · SALES LOOP</span>
+                <h3>Keep local opportunities moving.</h3>
+              </div>
+              <div class="workspace-actions">
+                <button id="refreshRadiusButton" type="button" class="secondary-button compact">Refresh Radius</button>
+                <label class="watch-toggle">
+                  <input id="watchEnabled" type="checkbox" />
+                  <span>Radius Watch</span>
+                </label>
+                <select id="watchInterval" aria-label="Radius Watch interval">
+                  <option value="1">Daily</option>
+                  <option value="3">Every 3 days</option>
+                  <option value="7" selected>Weekly</option>
+                  <option value="14">Every 2 weeks</option>
+                </select>
+              </div>
+            </div>
+            <div class="pipeline-metrics">
+              <button class="pipeline-metric due" type="button" data-stage-filter="DUE"><span>Due today</span><strong id="pipelineDue">0</strong></button>
+              <button class="pipeline-metric" type="button" data-stage-filter="NEW"><span>New</span><strong id="pipelineNew">0</strong></button>
+              <button class="pipeline-metric" type="button" data-stage-filter="CONTACTED"><span>Contacted</span><strong id="pipelineContacted">0</strong></button>
+              <button class="pipeline-metric" type="button" data-stage-filter="REPLIED"><span>Replied</span><strong id="pipelineReplied">0</strong></button>
+              <button class="pipeline-metric won" type="button" data-stage-filter="WON"><span>Won</span><strong id="pipelineWon">0</strong></button>
+            </div>
+            <div id="learningSummary" class="learning-summary">Gather will learn from replies, wins, and losses as you work this territory.</div>
+          </section>
 
           <div id="metrics" class="metrics" hidden>
             <div class="metric"><span>Prospects</span><strong id="metricCount">0</strong></div>
@@ -187,8 +227,23 @@
               <span>Sort</span>
               <select id="sortBy">
                 <option value="score">Best score</option>
+                <option value="followup">Follow-up due</option>
                 <option value="distance">Nearest</option>
                 <option value="name">Organization</option>
+              </select>
+            </label>
+            <label class="sort-field">
+              <span>Pipeline</span>
+              <select id="stageFilter">
+                <option value="ALL">All stages</option>
+                <option value="DUE">Due today</option>
+                <option value="NEW">New</option>
+                <option value="REVIEWED">Reviewed</option>
+                <option value="CONTACTED">Contacted</option>
+                <option value="FOLLOW_UP">Follow up</option>
+                <option value="REPLIED">Replied</option>
+                <option value="WON">Won</option>
+                <option value="LOST">Lost</option>
               </select>
             </label>
           </div>
@@ -218,8 +273,8 @@
     </main>
 
     <footer>
-      <span>Gather v0.8</span>
-      <span>Radius discovery · grounded AI analysis</span>
+      <span>Gather v0.9</span>
+      <span>Local B2B sales loop · Radius Watch · outcome learning</span>
     </footer>
   </div>
 
