@@ -114,11 +114,11 @@ public class DiscoveryRunProcessor {
                     .toList();
             evidenceBatchService.enrichAsync(evidenceTargets);
 
-            run.markCompleted(entities.size());
-            runRepository.save(run);
-
             campaign.markRefreshed(java.time.Instant.now());
             campaignRepository.save(campaign);
+
+            run.markCompleted(entities.size());
+            runRepository.save(run);
         } catch (Exception exception) {
             run.markFailed(rootMessage(exception));
             runRepository.save(run);
