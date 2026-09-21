@@ -10,3 +10,15 @@ ALTER TABLE discovered_prospects ADD COLUMN last_seen_at TIMESTAMP;
 
 UPDATE discovered_prospects SET first_seen_at = created_at WHERE first_seen_at IS NULL;
 UPDATE discovered_prospects SET last_seen_at = created_at WHERE last_seen_at IS NULL;
+
+UPDATE discovered_prospects
+SET campaign_id = (
+    SELECT discovery_runs.campaign_id
+    FROM discovery_runs
+    WHERE discovery_runs.id = discovered_prospects.run_id
+)
+WHERE campaign_id IS NULL;
+
+UPDATE discovered_prospects
+SET prospect_key = COALESCE(source_url, organization || '|' || address)
+WHERE prospect_key IS NULL;
