@@ -10,6 +10,7 @@ import com.palona.cateringleads.model.ProspectInsightResponse;
 import com.palona.cateringleads.model.ProspectEvidenceResponse;
 import com.palona.cateringleads.model.ProspectPipelineUpdateRequest;
 import com.palona.cateringleads.model.CampaignDashboardResponse;
+import com.palona.cateringleads.model.CampaignMonitoringRequest;
 import com.palona.cateringleads.persistence.DiscoveredProspectEntity;
 import com.palona.cateringleads.persistence.DiscoveredProspectRepository;
 import com.palona.cateringleads.service.CampaignService;
@@ -62,6 +63,18 @@ public class CampaignController {
     @GetMapping("/campaigns")
     public List<CampaignResponse> campaigns() {
         return campaignService.findAll();
+    }
+
+    @PatchMapping("/campaigns/{campaignId}/monitoring")
+    public CampaignResponse configureMonitoring(
+            @PathVariable String campaignId,
+            @Valid @RequestBody CampaignMonitoringRequest request
+    ) {
+        return campaignService.configureMonitoring(
+                campaignId,
+                request.enabled(),
+                request.intervalDays()
+        );
     }
 
     @GetMapping("/restaurants/search")
