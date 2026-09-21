@@ -12,5 +12,20 @@ public record CampaignCreateRequest(
         @NotBlank String address,
         @DecimalMin("-90.0") @DecimalMax("90.0") double latitude,
         @DecimalMin("-180.0") @DecimalMax("180.0") double longitude,
-        @Min(0) @Max(80_500) int radiusMeters
-) {}
+        @Min(0) @Max(80_500) int radiusMeters,
+        Boolean supportsCatering,
+        String primaryDaypart,
+        String priceTier,
+        @Min(1) @Max(50) Integer deliveryRadiusMiles
+) {
+    public CampaignCreateRequest(
+            String name,
+            String businessType,
+            String address,
+            double latitude,
+            double longitude,
+            int radiusMeters
+    ) {
+        this(name, businessType, address, latitude, longitude, radiusMeters, true, null, null, null);
+    }
+}
