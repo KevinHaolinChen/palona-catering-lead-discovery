@@ -6,6 +6,7 @@ import java.util.Map;
 public record CampaignDashboardResponse(
         int totalProspects,
         int newCount,
+        int newThisWeekCount,
         int contactedCount,
         int followUpCount,
         int repliedCount,
