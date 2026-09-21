@@ -1,0 +1,3 @@
+ALTER TABLE campaigns ADD COLUMN monitoring_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE campaigns ADD COLUMN refresh_interval_days INTEGER NOT NULL DEFAULT 7;
+ALTER TABLE campaigns ADD COLUMN last_refresh_at TIMESTAMP;
