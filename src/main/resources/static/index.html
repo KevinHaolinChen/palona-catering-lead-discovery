@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Gather helps restaurants discover, understand, and contact nearby B2B prospects for catering and group-order growth." />
   <title>Gather · AI-powered restaurant growth</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3ynHTNNZw1xrBPMMD7PpgT5AqtvAk=" crossorigin="" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -104,6 +105,44 @@
               </div>
             </label>
 
+            <details class="profile-panel">
+              <summary>Refine restaurant fit</summary>
+              <div class="profile-grid">
+                <label class="profile-toggle">
+                  <input id="supportsCatering" type="checkbox" checked />
+                  <span>Handles catering / group orders</span>
+                </label>
+
+                <label class="field">
+                  <span>Primary daypart</span>
+                  <select id="primaryDaypart">
+                    <option value="all_day">All day</option>
+                    <option value="breakfast_lunch">Breakfast + lunch</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="lunch_dinner">Lunch + dinner</option>
+                    <option value="dinner">Dinner</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Price position</span>
+                  <select id="priceTier">
+                    <option value="value">Value</option>
+                    <option value="mid" selected>Mid-market</option>
+                    <option value="premium">Premium</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Practical delivery radius</span>
+                  <div class="profile-inline">
+                    <input id="deliveryRadius" type="range" min="1" max="25" value="5" />
+                    <strong id="deliveryRadiusValue">5 mi</strong>
+                  </div>
+                </label>
+              </div>
+            </details>
+
             <button id="runButton" class="primary-button" type="submit">
               <span>Find prospects</span>
               <span class="button-arrow">→</span>
@@ -154,6 +193,17 @@
             </label>
           </div>
 
+          <section id="mapSection" class="radius-map-section" hidden>
+            <div class="radius-map-heading">
+              <div>
+                <span class="eyebrow">RADIUS MAP</span>
+                <h3>Prospects around your restaurant</h3>
+              </div>
+              <span id="mapStatus" class="map-status">Ready</span>
+            </div>
+            <div id="radiusMap" class="radius-map" aria-label="Map of restaurant and nearby prospects"></div>
+          </section>
+
           <div id="emptyState" class="empty-state">
             <div class="empty-icon"><span></span><span></span><span></span></div>
             <h3>One restaurant search. One local growth map.</h3>
@@ -168,11 +218,12 @@
     </main>
 
     <footer>
-      <span>Gather v0.7</span>
+      <span>Gather v0.8</span>
       <span>Radius discovery · grounded AI analysis</span>
     </footer>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="/app.js"></script>
 </body>
 </html>
