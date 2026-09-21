@@ -6,6 +6,8 @@ public record DiscoveryCandidate(
         String address,
         String website,
         String phone,
+        double latitude,
+        double longitude,
         double distanceMiles,
         String sourceUrl,
         String source,
