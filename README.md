@@ -116,7 +116,7 @@ Flyway manages:
 - `discovery_runs`
 - `discovered_prospects`
 
-Docker uses PostgreSQL 17. Local/test mode uses H2 in PostgreSQL compatibility mode.
+Docker uses PostgreSQL 17. Normal local runs use a file-backed H2 database under `./data/` so workspaces, follow-ups, and learned outcomes survive restarts. Tests use a separate in-memory H2 database in PostgreSQL compatibility mode.
 
 ## Enable generative AI
 
