@@ -10,5 +10,9 @@ public record CampaignResponse(
         double latitude,
         double longitude,
         int radiusMeters,
+        boolean supportsCatering,
+        String primaryDaypart,
+        String priceTier,
+        int deliveryRadiusMiles,
         Instant createdAt
 ) {}
