@@ -19,6 +19,9 @@ public class CampaignEntity {
     private String primaryDaypart;
     private String priceTier;
     private int deliveryRadiusMiles;
+    private boolean monitoringEnabled;
+    private int refreshIntervalDays;
+    private Instant lastRefreshAt;
     private Instant createdAt;
 
     protected CampaignEntity() {}
@@ -35,6 +38,9 @@ public class CampaignEntity {
             String primaryDaypart,
             String priceTier,
             int deliveryRadiusMiles,
+            boolean monitoringEnabled,
+            int refreshIntervalDays,
+            Instant lastRefreshAt,
             Instant createdAt
     ) {
         this.id = id;
@@ -48,6 +54,9 @@ public class CampaignEntity {
         this.primaryDaypart = primaryDaypart;
         this.priceTier = priceTier;
         this.deliveryRadiusMiles = deliveryRadiusMiles;
+        this.monitoringEnabled = monitoringEnabled;
+        this.refreshIntervalDays = refreshIntervalDays;
+        this.lastRefreshAt = lastRefreshAt;
         this.createdAt = createdAt;
     }
 
@@ -62,5 +71,17 @@ public class CampaignEntity {
     public String getPrimaryDaypart() { return primaryDaypart; }
     public String getPriceTier() { return priceTier; }
     public int getDeliveryRadiusMiles() { return deliveryRadiusMiles; }
+    public boolean isMonitoringEnabled() { return monitoringEnabled; }
+    public int getRefreshIntervalDays() { return refreshIntervalDays; }
+    public Instant getLastRefreshAt() { return lastRefreshAt; }
     public Instant getCreatedAt() { return createdAt; }
+
+    public void configureMonitoring(boolean enabled, int intervalDays) {
+        this.monitoringEnabled = enabled;
+        this.refreshIntervalDays = Math.max(1, Math.min(30, intervalDays));
+    }
+
+    public void markRefreshed(Instant refreshedAt) {
+        this.lastRefreshAt = refreshedAt;
+    }
 }
