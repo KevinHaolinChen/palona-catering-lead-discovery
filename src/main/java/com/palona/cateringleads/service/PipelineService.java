@@ -57,6 +57,7 @@ public class PipelineService {
         Map<String, DiscoveredProspectEntity> latest = latestByProspect(campaignId);
 
         int newCount = 0;
+        int newThisWeekCount = 0;
         int contactedCount = 0;
         int followUpCount = 0;
         int repliedCount = 0;
@@ -65,9 +66,15 @@ public class PipelineService {
         List<String> dueIds = new ArrayList<>();
         Set<String> categories = new LinkedHashSet<>();
         Instant now = Instant.now();
+        Instant weekAgo = now.minus(java.time.Duration.ofDays(7));
 
         for (DiscoveredProspectEntity prospect : latest.values()) {
             categories.add(prospect.getCategory());
+            Instant firstSeen = prospect.getFirstSeenAt();
+            if (firstSeen != null && !firstSeen.isBefore(weekAgo)) {
+                newThisWeekCount++;
+            }
+
             switch (normalizeStage(prospect.getPipelineStage())) {
                 case "NEW", "REVIEWED" -> newCount++;
                 case "CONTACTED" -> contactedCount++;
@@ -96,6 +103,7 @@ public class PipelineService {
         return new CampaignDashboardResponse(
                 latest.size(),
                 newCount,
+                newThisWeekCount,
                 contactedCount,
                 followUpCount,
                 repliedCount,
