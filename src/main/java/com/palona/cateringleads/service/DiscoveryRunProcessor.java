@@ -25,17 +25,20 @@ public class DiscoveryRunProcessor {
     private final CampaignRepository campaignRepository;
     private final DiscoveryRunRepository runRepository;
     private final DiscoveredProspectRepository prospectRepository;
+    private final OutcomeLearningService outcomeLearningService;
     private final List<ProspectSource> sources;
 
     public DiscoveryRunProcessor(
             CampaignRepository campaignRepository,
             DiscoveryRunRepository runRepository,
             DiscoveredProspectRepository prospectRepository,
+            OutcomeLearningService outcomeLearningService,
             List<ProspectSource> sources
     ) {
         this.campaignRepository = campaignRepository;
         this.runRepository = runRepository;
         this.prospectRepository = prospectRepository;
+        this.outcomeLearningService = outcomeLearningService;
         this.sources = sources;
     }
 
@@ -81,7 +84,26 @@ public class DiscoveryRunProcessor {
                     .forEach(candidate -> deduped.putIfAbsent(dedupeKey(candidate), candidate));
 
             List<DiscoveredProspectEntity> entities = deduped.values().stream()
-                    .map(candidate -> DiscoveredProspectEntity.from(runId, candidate))
+                    .map(candidate -> {
+                        String prospectKey = dedupeKey(candidate);
+                        DiscoveredProspectEntity previous = prospectRepository
+                                .findByCampaignIdAndProspectKeyOrderByCreatedAtDesc(campaignId, prospectKey)
+                                .stream()
+                                .findFirst()
+                                .orElse(null);
+                        int learnedAdjustment =
+                                outcomeLearningService.adjustmentFor(campaignId, candidate.category());
+                        return DiscoveredProspectEntity.from(
+                                runId,
+                                campaignId,
+                                prospectKey,
+                                candidate,
+                                previous,
+                                learnedAdjustment
+                        );
+                    })
+                    .sorted(Comparator.comparingInt(DiscoveredProspectEntity::getScore).reversed()
+                            .thenComparingDouble(DiscoveredProspectEntity::getDistanceMiles))
                     .toList();
             prospectRepository.saveAll(entities);
 
