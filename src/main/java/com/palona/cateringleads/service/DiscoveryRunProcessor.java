@@ -26,6 +26,7 @@ public class DiscoveryRunProcessor {
     private final DiscoveryRunRepository runRepository;
     private final DiscoveredProspectRepository prospectRepository;
     private final OutcomeLearningService outcomeLearningService;
+    private final EvidenceBatchService evidenceBatchService;
     private final List<ProspectSource> sources;
 
     public DiscoveryRunProcessor(
@@ -33,12 +34,14 @@ public class DiscoveryRunProcessor {
             DiscoveryRunRepository runRepository,
             DiscoveredProspectRepository prospectRepository,
             OutcomeLearningService outcomeLearningService,
+            EvidenceBatchService evidenceBatchService,
             List<ProspectSource> sources
     ) {
         this.campaignRepository = campaignRepository;
         this.runRepository = runRepository;
         this.prospectRepository = prospectRepository;
         this.outcomeLearningService = outcomeLearningService;
+        this.evidenceBatchService = evidenceBatchService;
         this.sources = sources;
     }
 
@@ -106,6 +109,12 @@ public class DiscoveryRunProcessor {
                             .thenComparingDouble(DiscoveredProspectEntity::getDistanceMiles))
                     .toList();
             prospectRepository.saveAll(entities);
+
+            List<String> evidenceTargets = entities.stream()
+                    .limit(10)
+                    .map(DiscoveredProspectEntity::getId)
+                    .toList();
+            evidenceBatchService.enrichAsync(evidenceTargets);
 
             run.markCompleted(entities.size());
             runRepository.save(run);
