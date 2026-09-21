@@ -28,7 +28,7 @@ import java.util.Set;
 public class DiscoveryService implements ProspectSource {
 
     private static final String USER_AGENT =
-            "VerityScout/0.4 (+https://github.com/KevinHaolinChen/verityscout)";
+            "Gather/0.8 (+https://github.com/KevinHaolinChen/verityscout)";
 
     private final JsonMapper jsonMapper;
     private final ScoringService scoringService;
@@ -179,7 +179,7 @@ public class DiscoveryService implements ProspectSource {
             String id = element.get("id") == null ? "" : element.get("id").asText();
 
             candidates.add(new DiscoveryCandidate(
-                    name, category, address, website, phone, distance,
+                    name, category, address, website, phone, lat, lon, distance,
                     "https://www.openstreetmap.org/" + type + "/" + id,
                     sourceName(), breakdown.total(), breakdown
             ));
