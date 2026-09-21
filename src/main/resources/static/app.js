@@ -30,6 +30,18 @@ const deliveryRadius = document.getElementById('deliveryRadius');
 const deliveryRadiusValue = document.getElementById('deliveryRadiusValue');
 const mapSection = document.getElementById('mapSection');
 const mapStatus = document.getElementById('mapStatus');
+const workspaceList = document.getElementById('workspaceList');
+const salesLoop = document.getElementById('salesLoop');
+const refreshRadiusButton = document.getElementById('refreshRadiusButton');
+const watchEnabled = document.getElementById('watchEnabled');
+const watchInterval = document.getElementById('watchInterval');
+const pipelineDue = document.getElementById('pipelineDue');
+const pipelineNew = document.getElementById('pipelineNew');
+const pipelineContacted = document.getElementById('pipelineContacted');
+const pipelineReplied = document.getElementById('pipelineReplied');
+const pipelineWon = document.getElementById('pipelineWon');
+const learningSummary = document.getElementById('learningSummary');
+const stageFilter = document.getElementById('stageFilter');
 
 const state = {
   selectedRestaurant: null,
@@ -38,6 +50,7 @@ const state = {
   campaign: null,
   run: null,
   prospects: [],
+  dashboard: null,
 };
 
 let searchTimer = null;
@@ -264,6 +277,45 @@ function parseScoreExplanation(value) {
     .join('');
 }
 
+
+function pipelineStage(value) {
+  return String(value || 'NEW').toUpperCase();
+}
+
+function pipelineLabel(value) {
+  return humanize(pipelineStage(value));
+}
+
+function dateInputValue(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
+function isFollowUpDue(prospect) {
+  if (!prospect.next_follow_up_at) return false;
+  const stage = pipelineStage(prospect.pipeline_stage);
+  if (['WON', 'LOST'].includes(stage)) return false;
+  return new Date(prospect.next_follow_up_at).getTime() <= Date.now();
+}
+
+function stageOptions(selected) {
+  const stages = [
+    ['NEW', 'New'],
+    ['REVIEWED', 'Reviewed'],
+    ['CONTACTED', 'Contacted'],
+    ['FOLLOW_UP', 'Follow up'],
+    ['REPLIED', 'Replied'],
+    ['WON', 'Won'],
+    ['LOST', 'Lost'],
+  ];
+  const current = pipelineStage(selected);
+  return stages.map(([value, label]) =>
+    `<option value="${value}" ${value === current ? 'selected' : ''}>${label}</option>`
+  ).join('');
+}
+
 function prospectCard(prospect) {
   const website = safeHttpUrl(prospect.website);
   const source = safeHttpUrl(prospect.source_url);
@@ -274,6 +326,10 @@ function prospectCard(prospect) {
   const evidenceSummary = prospect.evidence_summary
     ? `<div class="evidence-note"><strong>Public evidence</strong><span>${escapeHtml(prospect.evidence_summary)}</span>${evidenceSource ? `<a href="${escapeHtml(evidenceSource)}" target="_blank" rel="noreferrer">source ↗</a>` : ''}</div>`
     : '';
+  const stage = pipelineStage(prospect.pipeline_stage);
+  const followUpDue = isFollowUpDue(prospect);
+  const followUpValue = dateInputValue(prospect.next_follow_up_at);
+  const learning = Number(prospect.learned_adjustment || 0);
 
   const actions = [
     `<button class="action-link email-action" type="button" data-email-prospect="${escapeHtml(prospect.id)}">Email lead</button>`,
@@ -292,6 +348,9 @@ function prospectCard(prospect) {
           ${prospect.source_name ? `<span class="signal-chip">${escapeHtml(prospect.source_name)}</span>` : ''}
           ${Number(prospect.profile_fit_score || 0) > 0 ? `<span class="signal-chip evidence-chip">Fit +${escapeHtml(prospect.profile_fit_score)}</span>` : ''}
           ${Number(prospect.evidence_score || 0) > 0 ? `<span class="signal-chip evidence-chip">Evidence +${escapeHtml(prospect.evidence_score)}</span>` : ''}
+          ${learning !== 0 ? `<span class="signal-chip learning-chip">Learning ${learning > 0 ? '+' : ''}${learning}</span>` : ''}
+          <span class="signal-chip stage-chip stage-${stage.toLowerCase()}">${escapeHtml(pipelineLabel(stage))}</span>
+          ${followUpDue ? '<span class="signal-chip due-chip">Follow-up due</span>' : ''}
         </div>
         <h3>${escapeHtml(prospect.organization)}</h3>
         <div class="prospect-meta">
@@ -300,6 +359,27 @@ function prospectCard(prospect) {
         </div>
         <div class="score-explanation">${parseScoreExplanation(prospect.score_explanation)}</div>
         ${evidenceSummary}
+        <details class="pipeline-editor">
+          <summary>
+            <span>Sales pipeline</span>
+            <span>${followUpValue ? `Follow up ${escapeHtml(followUpValue)}` : 'No follow-up scheduled'}</span>
+          </summary>
+          <div class="pipeline-editor-body">
+            <label>
+              <span>Stage</span>
+              <select data-pipeline-stage="${escapeHtml(prospect.id)}">${stageOptions(stage)}</select>
+            </label>
+            <label>
+              <span>Next follow-up</span>
+              <input data-follow-up-date="${escapeHtml(prospect.id)}" type="date" value="${escapeHtml(followUpValue)}" />
+            </label>
+            <label class="pipeline-note-field">
+              <span>Note</span>
+              <textarea data-pipeline-note="${escapeHtml(prospect.id)}" rows="2" placeholder="What happened?">${escapeHtml(prospect.pipeline_note || '')}</textarea>
+            </label>
+            <button class="secondary-button compact" type="button" data-save-pipeline="${escapeHtml(prospect.id)}">Save</button>
+          </div>
+        </details>
         <details class="why-lead" data-insight-prospect="${escapeHtml(prospect.id)}">
           <summary>
             <span>Why Gather chose this</span>
@@ -334,8 +414,20 @@ function renderProspects() {
   scoreValue.textContent = threshold;
 
   let visible = state.prospects.filter(p => p.score >= threshold);
+  const pipelineFilter = stageFilter.value;
+  if (pipelineFilter === 'DUE') {
+    visible = visible.filter(isFollowUpDue);
+  } else if (pipelineFilter !== 'ALL') {
+    visible = visible.filter(p => pipelineStage(p.pipeline_stage) === pipelineFilter);
+  }
+
   const sort = sortBy.value;
   visible = [...visible].sort((a, b) => {
+    if (sort === 'followup') {
+      const aTime = a.next_follow_up_at ? new Date(a.next_follow_up_at).getTime() : Number.MAX_SAFE_INTEGER;
+      const bTime = b.next_follow_up_at ? new Date(b.next_follow_up_at).getTime() : Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
+    }
     if (sort === 'distance') return Number(a.distance_miles) - Number(b.distance_miles);
     if (sort === 'name') return String(a.organization).localeCompare(String(b.organization));
     return b.score - a.score || Number(a.distance_miles) - Number(b.distance_miles);
@@ -433,6 +525,10 @@ async function handleCampaignSubmit(event) {
       'success'
     );
     revealResults();
+    watchEnabled.checked = Boolean(campaign.monitoring_enabled);
+    watchInterval.value = String(campaign.refresh_interval_days || 7);
+    await loadDashboard();
+    await loadWorkspaces();
     enrichTopProspects();
   } catch (error) {
     setRunBadge('FAILED');
@@ -487,12 +583,251 @@ minScore.addEventListener('input', () => {
   renderRadiusMap();
 });
 sortBy.addEventListener('change', renderProspects);
+stageFilter.addEventListener('change', () => {
+  renderProspects();
+  renderRadiusMap();
+});
+refreshRadiusButton.addEventListener('click', refreshCurrentCampaign);
+watchEnabled.addEventListener('change', saveWatchSettings);
+watchInterval.addEventListener('change', saveWatchSettings);
+workspaceList.addEventListener('click', event => {
+  const button = event.target.closest('[data-workspace-id]');
+  if (!button) return;
+  const campaign = (state.workspaces || []).find(item => item.id === button.dataset.workspaceId);
+  if (campaign) openWorkspace(campaign);
+});
+salesLoop.addEventListener('click', event => {
+  const filter = event.target.closest('[data-stage-filter]');
+  if (!filter) return;
+  stageFilter.value = filter.dataset.stageFilter;
+  renderProspects();
+  renderRadiusMap();
+});
 
 updateRadiusDisplay();
 updateDeliveryRadiusDisplay();
 requestLiveLocation();
 loadAiStatus();
+loadWorkspaces();
 
+
+async function loadDashboard() {
+  if (!state.campaign) return;
+  try {
+    const dashboard = await request(`/api/campaigns/${encodeURIComponent(state.campaign.id)}/dashboard`);
+    state.dashboard = dashboard;
+    salesLoop.hidden = false;
+    pipelineDue.textContent = dashboard.due_today_count || 0;
+    pipelineNew.textContent = dashboard.new_count || 0;
+    pipelineContacted.textContent = dashboard.contacted_count || 0;
+    pipelineReplied.textContent = dashboard.replied_count || 0;
+    pipelineWon.textContent = dashboard.won_count || 0;
+
+    const learned = dashboard.learned_category_adjustments || {};
+    const entries = Object.entries(learned);
+    learningSummary.textContent = entries.length
+      ? 'Gather learned: ' + entries.map(([category, adjustment]) =>
+          `${humanize(category)} ${Number(adjustment) > 0 ? '+' : ''}${adjustment}`
+        ).join(' · ') + ' on the next Radius refresh.'
+      : 'Gather will learn from replies, wins, and losses as you work this territory.';
+  } catch {
+    salesLoop.hidden = false;
+  }
+}
+
+function renderWorkspaces(campaigns) {
+  if (!campaigns.length) {
+    workspaceList.innerHTML = '<span class="workspace-empty">No saved workspaces yet.</span>';
+    return;
+  }
+
+  const sorted = [...campaigns].sort((a, b) =>
+    new Date(b.last_refresh_at || b.created_at) - new Date(a.last_refresh_at || a.created_at)
+  );
+
+  workspaceList.innerHTML = sorted.slice(0, 6).map(campaign => `
+    <button class="workspace-item" type="button" data-workspace-id="${escapeHtml(campaign.id)}">
+      <span>
+        <strong>${escapeHtml(campaign.name)}</strong>
+        <small>${escapeHtml(campaign.address)}</small>
+      </span>
+      <em>${campaign.monitoring_enabled ? 'WATCHING' : 'OPEN'}</em>
+    </button>
+  `).join('');
+}
+
+async function loadWorkspaces() {
+  try {
+    const campaigns = await request('/api/campaigns');
+    state.workspaces = campaigns;
+    renderWorkspaces(campaigns);
+  } catch {
+    workspaceList.innerHTML = '<span class="workspace-empty">Unable to load saved workspaces.</span>';
+  }
+}
+
+async function openWorkspace(campaign) {
+  state.campaign = campaign;
+  state.run = null;
+  state.selectedRestaurant = {
+    name: campaign.name,
+    address: campaign.address,
+    latitude: campaign.latitude,
+    longitude: campaign.longitude,
+    category: campaign.business_type,
+  };
+
+  restaurantSearch.value = campaign.name;
+  selectedRestaurantName.textContent = campaign.name;
+  selectedRestaurantAddress.textContent = campaign.address;
+  selectedRestaurant.hidden = false;
+
+  radius.value = String(Math.min(50, Math.round(Number(campaign.radius_meters) / 1609.344)));
+  updateRadiusDisplay();
+  supportsCatering.checked = Boolean(campaign.supports_catering);
+  primaryDaypart.value = campaign.primary_daypart || 'all_day';
+  priceTier.value = campaign.price_tier || 'mid';
+  deliveryRadius.value = String(campaign.delivery_radius_miles || 5);
+  updateDeliveryRadiusDisplay();
+
+  watchEnabled.checked = Boolean(campaign.monitoring_enabled);
+  watchInterval.value = String(campaign.refresh_interval_days || 7);
+
+  state.prospects = await request(`/api/campaigns/${encodeURIComponent(campaign.id)}/prospects`);
+  resultsTitle.textContent = `${campaign.name} sales workspace`;
+  resultsSubtitle.textContent =
+    `${campaign.address} · persistent Radius territory · ${state.prospects.length} known prospects`;
+  setRunBadge('COMPLETED');
+  revealResults();
+  await loadDashboard();
+  setStatus(`Opened ${campaign.name}. Continue the pipeline or refresh Radius for new opportunities.`, 'success');
+}
+
+async function refreshCurrentCampaign() {
+  if (!state.campaign || refreshRadiusButton.disabled) return;
+
+  refreshRadiusButton.disabled = true;
+  refreshRadiusButton.textContent = 'Refreshing…';
+  setStatus('Refreshing this Radius while preserving pipeline history…');
+  setRunBadge('QUEUED');
+
+  try {
+    const run = await request(
+      `/api/campaigns/${encodeURIComponent(state.campaign.id)}/runs`,
+      { method: 'POST' }
+    );
+    state.run = run;
+    await waitForRun(run.id);
+    state.prospects = await request(`/api/runs/${encodeURIComponent(run.id)}/prospects`);
+    revealResults();
+    await enrichTopProspects();
+    await loadDashboard();
+    await loadWorkspaces();
+  } catch (error) {
+    setRunBadge('FAILED');
+    setStatus(error.message || 'Radius refresh failed.', 'error');
+  } finally {
+    refreshRadiusButton.disabled = false;
+    refreshRadiusButton.textContent = 'Refresh Radius';
+  }
+}
+
+async function saveWatchSettings() {
+  if (!state.campaign) return;
+  try {
+    const campaign = await request(
+      `/api/campaigns/${encodeURIComponent(state.campaign.id)}/monitoring`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          enabled: watchEnabled.checked,
+          interval_days: Number(watchInterval.value),
+        }),
+      }
+    );
+    state.campaign = campaign;
+    setStatus(
+      watchEnabled.checked
+        ? `Radius Watch is on. Gather will refresh this territory every ${campaign.refresh_interval_days} day(s).`
+        : 'Radius Watch is off. You can still refresh manually.',
+      'success'
+    );
+    await loadWorkspaces();
+  } catch (error) {
+    setStatus(error.message || 'Unable to update Radius Watch.', 'error');
+  }
+}
+
+async function saveProspectPipeline(prospectId) {
+  const card = prospectList.querySelector(`[data-prospect-card="${CSS.escape(prospectId)}"]`);
+  if (!card) return;
+
+  const stage = card.querySelector(`[data-pipeline-stage="${CSS.escape(prospectId)}"]`)?.value || 'NEW';
+  const dateValue = card.querySelector(`[data-follow-up-date="${CSS.escape(prospectId)}"]`)?.value || '';
+  const note = card.querySelector(`[data-pipeline-note="${CSS.escape(prospectId)}"]`)?.value || '';
+  const button = card.querySelector(`[data-save-pipeline="${CSS.escape(prospectId)}"]`);
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Saving…';
+  }
+
+  try {
+    const updated = await request(
+      `/api/discovered-prospects/${encodeURIComponent(prospectId)}/pipeline`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stage,
+          next_follow_up_at: dateValue ? new Date(`${dateValue}T12:00:00`).toISOString() : null,
+          note,
+        }),
+      }
+    );
+
+    state.prospects = state.prospects.map(prospect =>
+      prospect.id === prospectId ? updated : prospect
+    );
+    renderProspects();
+    renderRadiusMap();
+    await loadDashboard();
+  } catch (error) {
+    setStatus(error.message || 'Unable to update prospect pipeline.', 'error');
+  }
+}
+
+async function markContactedAfterOutreach(prospectId) {
+  const prospect = state.prospects.find(item => item.id === prospectId);
+  if (!prospect) return;
+
+  const currentStage = pipelineStage(prospect.pipeline_stage);
+  if (['REPLIED', 'WON', 'LOST'].includes(currentStage)) return;
+
+  const followUp = prospect.next_follow_up_at
+    ? prospect.next_follow_up_at
+    : new Date(Date.now() + (3 * 24 * 60 * 60 * 1000)).toISOString();
+
+  try {
+    const updated = await request(
+      `/api/discovered-prospects/${encodeURIComponent(prospectId)}/pipeline`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stage: 'CONTACTED',
+          next_follow_up_at: followUp,
+          note: prospect.pipeline_note || '',
+        }),
+      }
+    );
+    state.prospects = state.prospects.map(item => item.id === prospectId ? updated : item);
+    await loadDashboard();
+  } catch {
+    // Outreach itself should still work if pipeline persistence fails.
+  }
+}
 
 
 function validCoordinate(value, min, max) {
@@ -678,6 +1013,12 @@ async function copyText(value) {
 }
 
 prospectList.addEventListener('click', async event => {
+  const savePipeline = event.target.closest('[data-save-pipeline]');
+  if (savePipeline) {
+    await saveProspectPipeline(savePipeline.dataset.savePipeline);
+    return;
+  }
+
   const summary = event.target.closest('details[data-insight-prospect] > summary');
   if (summary) {
     const details = summary.parentElement;
@@ -721,6 +1062,7 @@ prospectList.addEventListener('click', async event => {
         feedback.innerHTML =
           `Found <strong>${escapeHtml(outreach.email)}</strong> from a public source · ${draftLabel}. Opening your email app…`;
       }
+      await markContactedAfterOutreach(prospectId);
       window.location.href = mailto.toString();
     } else {
       const copied = await copyText(`${outreach.subject}\n\n${outreach.body}`);
