@@ -108,7 +108,11 @@ public class PipelineService {
     }
 
     public List<DiscoveredProspectEntity> latestProspects(String campaignId) {
-        return new ArrayList<>(latestByProspect(campaignId).values());
+        return latestByProspect(campaignId).values().stream()
+                .sorted(java.util.Comparator
+                        .comparingInt(DiscoveredProspectEntity::getScore).reversed()
+                        .thenComparingDouble(DiscoveredProspectEntity::getDistanceMiles))
+                .toList();
     }
 
     private Map<String, DiscoveredProspectEntity> latestByProspect(String campaignId) {
