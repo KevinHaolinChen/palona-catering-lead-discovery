@@ -8,6 +8,8 @@ import com.palona.cateringleads.model.RestaurantSearchResult;
 import com.palona.cateringleads.model.ProspectOutreachResponse;
 import com.palona.cateringleads.model.ProspectInsightResponse;
 import com.palona.cateringleads.model.ProspectEvidenceResponse;
+import com.palona.cateringleads.model.ProspectPipelineUpdateRequest;
+import com.palona.cateringleads.model.CampaignDashboardResponse;
 import com.palona.cateringleads.persistence.DiscoveredProspectEntity;
 import com.palona.cateringleads.persistence.DiscoveredProspectRepository;
 import com.palona.cateringleads.service.CampaignService;
@@ -15,6 +17,7 @@ import com.palona.cateringleads.service.GeocodingService;
 import com.palona.cateringleads.service.ProspectOutreachService;
 import com.palona.cateringleads.service.ProspectIntelligenceService;
 import com.palona.cateringleads.service.ProspectEvidenceService;
+import com.palona.cateringleads.service.PipelineService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +33,7 @@ public class CampaignController {
     private final ProspectOutreachService prospectOutreachService;
     private final ProspectIntelligenceService prospectIntelligenceService;
     private final ProspectEvidenceService prospectEvidenceService;
+    private final PipelineService pipelineService;
 
     public CampaignController(
             CampaignService campaignService,
@@ -37,7 +41,8 @@ public class CampaignController {
             GeocodingService geocodingService,
             ProspectOutreachService prospectOutreachService,
             ProspectIntelligenceService prospectIntelligenceService,
-            ProspectEvidenceService prospectEvidenceService
+            ProspectEvidenceService prospectEvidenceService,
+            PipelineService pipelineService
     ) {
         this.campaignService = campaignService;
         this.prospectRepository = prospectRepository;
@@ -45,6 +50,7 @@ public class CampaignController {
         this.prospectOutreachService = prospectOutreachService;
         this.prospectIntelligenceService = prospectIntelligenceService;
         this.prospectEvidenceService = prospectEvidenceService;
+        this.pipelineService = pipelineService;
     }
 
     @PostMapping("/campaigns")
@@ -86,6 +92,24 @@ public class CampaignController {
     @GetMapping("/runs/{runId}/prospects")
     public List<DiscoveredProspectEntity> runProspects(@PathVariable String runId) {
         return prospectRepository.findByRunIdOrderByScoreDesc(runId);
+    }
+
+    @GetMapping("/campaigns/{campaignId}/prospects")
+    public List<DiscoveredProspectEntity> campaignProspects(@PathVariable String campaignId) {
+        return pipelineService.latestProspects(campaignId);
+    }
+
+    @GetMapping("/campaigns/{campaignId}/dashboard")
+    public CampaignDashboardResponse campaignDashboard(@PathVariable String campaignId) {
+        return pipelineService.dashboard(campaignId);
+    }
+
+    @PatchMapping("/discovered-prospects/{prospectId}/pipeline")
+    public DiscoveredProspectEntity updatePipeline(
+            @PathVariable String prospectId,
+            @RequestBody ProspectPipelineUpdateRequest request
+    ) {
+        return pipelineService.update(prospectId, request);
     }
 
     @PostMapping("/discovered-prospects/{prospectId}/evidence")
